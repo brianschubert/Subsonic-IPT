@@ -1,9 +1,9 @@
 Subsonic IPT
 ============
 
-An Arduino Sketch for inertial position tracking using a ADXL345 accelerometer.
+An Arduino Sketch for inertial position tracking using an ADXL345 accelerometer.
 
-This repository was developed by the "Subsonic" team as part of an assignment GE 1501 course at Northeastern University during Fall 2019.
+This repository was developed by the "Subsonic" team as part of an assignment for the GE 1501 course at Northeastern University during Fall 2019.
 
 Installation
 ------------
@@ -23,12 +23,11 @@ Running with CMake
 
 First, ensure that you have ``cmake`` installed on your system. If you are using an IDE such as `CLion`_, ``cmake`` would have been included with your installation.
 
-Next, update the ``arduino-variables.cmake`` file to reflect your local Arduino installation. The file included in this repository represents an Arduino v1.8.10 installation in ``/opt`` on a Linux system. If you are using an operating system other than Linux, you may need to look up the appropriate system paths for your Arduino installation. For MacOS users, you may find the `arduino-clion-minimal
-`_ repository which inspired the structure of this repository helpful.
+Next, update the ``arduino-variables.cmake`` file to reflect your local Arduino installation. The file included in this repository represents an Arduino v1.8.10 installation in ``/opt`` on a Linux system. If you are using an operating system other than Linux, you may need to look up the appropriate system paths for your Arduino installation. For MacOS users, you may find the `arduino-clion-minimal`_ repository which inspired the structure of this repository helpful.
 
 If you are using `CLion`_, follow the steps given in `this blog post`_ to configure your IDE's toolchain.
 
-.. _arduino-clion-minimal : https://github.com/cpbotha/arduino-clion-minimal
+.. _arduino-clion-minimal: https://github.com/cpbotha/arduino-clion-minimal
 .. _this blog post: https://vxlabs.com/2018/03/24/developing-arduino-sketches-with-jetbrains-clion-a-minimal-example/
 .. _CLion: https://www.jetbrains.com/clion/
 
@@ -40,8 +39,8 @@ Otherwise, you can build the project manually with `cmake` by running the follow
     $ cd !$
     $ cmake -DCMAKE_TOOLCHAIN_FILE=arduino-uno-toolchain.cmake ..
 
-To build the sketch, run the `verify` CMake target.
-To upload the sketch to your Arduino, run the `upload` CMake target.
+To build the sketch, run the ``verify`` CMake target.
+To upload the sketch to your Arduino, run the ``upload`` CMake target.
 
 Running with Arduino IDE
 ------------------------
