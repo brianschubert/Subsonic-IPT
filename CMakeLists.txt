@@ -27,7 +27,7 @@ include_directories(
 
 # use this target for a quick compile-only check of your CPP files
 # add more source (CPP) files here when you add them to the sketch
-add_executable(arduino-clion-minimal challenge4.cpp sketch.cpp)
+add_executable(arduino-clion-minimal sketch.cpp pseudo_api.h src/point.h src/navigator.h src/navigator.cpp src/led_array.h src/pin.h)
 set_target_properties(arduino-clion-minimal PROPERTIES LINKER_LANGUAGE CXX)
 
 # use the following two targets for building and uploading sketches from clion.
@@ -37,3 +37,6 @@ set_target_properties(arduino-clion-minimal PROPERTIES LINKER_LANGUAGE CXX)
 # see https://github.com/arduino/Arduino/blob/master/build/shared/manpage.adoc for arduino cmd options
 add_custom_target(upload ALL ${ARDUINO_CMD} --upload --preserve-temp-files --verbose blink.ino WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 add_custom_target(verify ALL ${ARDUINO_CMD} --verify --preserve-temp-files --verbose blink.ino WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+# Add test target
+add_subdirectory(test)
