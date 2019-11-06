@@ -11,7 +11,7 @@ void DirectionScreen::print_direction(Point direction)
     m_lcd.clear();
     m_lcd.setCursor(0,0);
     m_title_line(m_lcd);
-    m_lcd.setCursor(1,0);
+    m_lcd.setCursor(0,1);
 
     constexpr Angle backwards = Angle{M_PI};
     auto travel_angle = direction.angle();
