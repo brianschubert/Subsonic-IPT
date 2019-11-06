@@ -25,6 +25,8 @@ constexpr int REFRESH_PERIOD_MILLI = 500;
 /// The maximum expected size for an incoming movement message.
 constexpr size_t MAX_SIM_MESSAGE_LENGTH = 30;
 
+constexpr double ARRIVAL_THRESHOLD = 0.5;
+
 LEDArray<sizeof(LED_PINS)> g_led_array(LED_PINS);
 
 Navigator g_nav{};

@@ -17,7 +17,11 @@ Point Navigator::compute_direction() const
 
     // Compute the true displacement vector that the device must travel
     // along relative to the direction it is currently facing.
-    return displacement.norm() * Point::unit_from_angle(direction);
+    if (direction.is_nan()) {
+        return {0, 0};
+    } else {
+        return displacement.norm() * Point::unit_from_angle(direction);
+    }
 }
 
 } // namespace subsonic_ipt

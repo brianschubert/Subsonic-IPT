@@ -17,7 +17,7 @@ void DirectionScreen::print_direction(Point direction)
     auto travel_angle = direction.angle();
     DirectionHandler handler;
 
-    if (travel_angle < m_snap_tolerance && travel_angle > -m_snap_tolerance) {
+    if ((travel_angle < m_snap_tolerance && travel_angle > -m_snap_tolerance) || travel_angle.is_nan()) {
         handler = m_handlers.forward;
     } else if (travel_angle > (backwards - m_snap_tolerance)
         && travel_angle < (backwards + m_snap_tolerance)

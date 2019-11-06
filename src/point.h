@@ -22,6 +22,10 @@ struct Angle {
         return m_rad * 180.0 / M_PI;
     }
 
+    bool is_nan() const {
+        return isnan(m_rad);
+    }
+
     static Angle from_degrees(double degrees)
     {
         return {degrees * M_PI / 180};
@@ -83,7 +87,15 @@ struct Point {
     Angle angle() const
     {
         if (m_x == 0) {
-            return Angle{(m_y > 0 ? M_PI/2 : M_PI * 3.0/2.0)};
+            if (m_y == 0) {
+                return {NAN};
+            }
+            return Angle{
+                (m_y > 0
+                    ? M_PI / 2
+                    : M_PI * 3.0 / 2.0
+                )
+            };
         }
 
         double offset = atan(m_y / m_x);
