@@ -1,8 +1,10 @@
 #include <Arduino.h>
+#include <LiquidCrystal.h>
 
 #include "src/point.h"
 #include "src/navigator.h"
 #include "src/led_array.h"
+#include "src/direction_screen.h"
 
 // When defined, this sketch will receive simulated movement data
 // from a serial input instead of processing input from an accelerometer.
@@ -25,6 +27,26 @@ LEDArray<sizeof(LED_PINS)> g_led_array(LED_PINS);
 
 Navigator g_nav{};
 
+void print_screen_title(LiquidCrystal& lcd);
+
+void print_direction_forward(LiquidCrystal& lcd, Point direction);
+
+void print_direction_left(LiquidCrystal& lcd, Point direction);
+
+void print_direction_right(LiquidCrystal& lcd, Point direction);
+
+void print_direction_backward(LiquidCrystal& lcd, Point direction);
+
+DirectionScreen g_screen(
+    LiquidCrystal(13, 12, 11, 10, 9, 8),
+    Angle::from_degrees(10.0),
+    print_screen_title,
+    print_direction_forward,
+    print_direction_left,
+    print_direction_right,
+    print_direction_backward
+);
+
 double g_max_distance{0};
 
 double g_last_display_update;
@@ -33,12 +55,19 @@ ButtonAction check_buttons();
 
 bool read_deltas(Point&, Angle&);
 
+void update_display(size_t current_destination, Point direction);
+
 } // namespace
 
 void setup()
 {
     Serial.begin(9600);
     g_led_array.set_pwm(false);
+
+    // Initialize the LCD library for a 16x2 character display.
+    g_screen.lcd().begin(16, 2);
+    // Clear the LCD screen.
+    g_screen.lcd().clear();
 }
 
 void loop()
@@ -74,8 +103,7 @@ void loop()
         }
 
         g_led_array.activate_led_percent(direction_dist / g_max_distance);
-
-        // g_lcd_screen.display_direction(user_direction);
+        g_screen.print_direction(user_direction);
     }
 }
 
@@ -119,6 +147,44 @@ bool read_deltas(Point& pos_delta, Angle& facing_dela)
     // TODO Read accelerometer
     return false;
 #endif
+}
+
+void print_screen_title(LiquidCrystal& lcd)
+{
+    lcd.print("To #");
+    lcd.print(g_nav.current_destination_index());
+    lcd.print("(");
+    const auto destination = g_nav.current_destination();
+    lcd.print(static_cast<int>(destination.m_x));
+    lcd.print(",");
+    lcd.print(static_cast<int>(destination.m_y));
+    lcd.print(")");
+}
+
+void print_direction_forward(LiquidCrystal& lcd, Point direction)
+{
+    lcd.print("Go forward ");
+    lcd.print(direction.norm());
+    lcd.print("m");
+}
+
+void print_direction_left(LiquidCrystal& lcd, Point direction)
+{
+    lcd.print("Turn ");
+    lcd.print(static_cast<int>(direction.angle().deg()));
+    lcd.print("* Left");
+}
+
+void print_direction_right(LiquidCrystal& lcd, Point direction)
+{
+    lcd.print("Turn ");
+    lcd.print(static_cast<int>(direction.angle().deg()) - 180);
+    lcd.print("* Right");
+}
+
+void print_direction_backward(LiquidCrystal& lcd, Point direction)
+{
+    lcd.print("Turn around");
 }
 
 } // namespace
