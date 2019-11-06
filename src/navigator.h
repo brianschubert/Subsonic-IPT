@@ -71,9 +71,14 @@ class Navigator {
      *
      * Declared as inline since the implementation is trivial
      */
-    size_t current_destination() const
+    size_t current_destination_index() const
     {
         return m_current_dest;
+    }
+
+    Point current_destination() const
+    {
+        return m_destinations[m_current_dest];
     }
 
     /**

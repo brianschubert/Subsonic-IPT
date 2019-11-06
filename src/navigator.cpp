@@ -10,7 +10,7 @@ Point Navigator::compute_direction() const
 {
     // Compute the difference vector between the current position and
     // the destination.
-    Point displacement = m_destinations[m_current_dest] - m_current_pos;
+    Point displacement = current_destination() - m_current_pos;
     // Compute the true direction that the device must travel relative
     // to the direction it is currently facing.
     Angle direction = displacement.angle() - m_facing;
