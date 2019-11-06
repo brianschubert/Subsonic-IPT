@@ -22,7 +22,7 @@ constexpr Pin LED_PINS[] = {3, 5, 6};
  */
 enum class ButtonAction : Pin {
     Set = 4,
-    Cycle = 2,
+    Cycle = 7,
     None = 0,
 };
 
