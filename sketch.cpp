@@ -112,7 +112,7 @@ namespace {
 ButtonAction check_buttons()
 {
     for (auto button : BUTTON_PINS) {
-        if (digitalRead(button)) {
+        if (digitalRead(button) == LOW) {
             return static_cast<ButtonAction>(button);
         }
     }
