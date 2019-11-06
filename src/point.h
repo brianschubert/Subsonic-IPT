@@ -36,6 +36,21 @@ struct Angle {
     {
         return {first.m_rad - second.m_rad};
     }
+
+    friend bool operator<(Angle first, Angle second)
+    {
+        return first.m_rad < second.m_rad;
+    }
+
+    friend bool operator>(Angle first, Angle second)
+    {
+        return first.m_rad > second.m_rad;
+    }
+
+    Angle operator-() const
+    {
+        return {m_rad};
+    }
 };
 
 /**
