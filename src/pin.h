@@ -21,8 +21,8 @@ constexpr Pin LED_PINS[] = {3, 5, 6};
  * The possible inputs that this sketch can receive from button activations.
  */
 enum class ButtonAction : Pin {
-    Set = 7,
-    Cycle = 8,
+    Set = 4,
+    Cycle = 2,
     None = 0,
 };
 
