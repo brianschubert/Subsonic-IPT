@@ -83,7 +83,7 @@ struct Point {
     Angle angle() const
     {
         if (m_x == 0) {
-            return Angle{(m_y > 0 ? M_PI/2 : -M_PI/2)};
+            return Angle{(m_y > 0 ? M_PI/2 : M_PI * 3.0/2.0)};
         }
 
         double offset = atan(m_y / m_x);
