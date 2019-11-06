@@ -67,7 +67,12 @@ struct Point {
     [[nodiscard]]
     Angle angle() const
     {
+        if (m_x == 0) {
+            return Angle{(m_y > 0 ? M_PI/2 : -M_PI/2)};
+        }
+
         double offset = atan(m_y / m_x);
+
         if (m_x > 0 && m_y > 0) {
             // This point is in Q1.
             return {offset};
