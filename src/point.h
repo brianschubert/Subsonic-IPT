@@ -19,12 +19,12 @@ struct Angle {
     /// Returns this angle expressed in degrees.
     double deg() const
     {
-        return M_PI * m_rad / 180.0;
+        return m_rad * 180.0 / M_PI;
     }
 
     static Angle from_degrees(double degrees)
     {
-        return {degrees * 180 / M_PI};
+        return {degrees * M_PI / 180};
     }
 
     friend Angle operator+(Angle first, Angle second)
