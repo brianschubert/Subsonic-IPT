@@ -240,7 +240,7 @@ void print_direction_left(LiquidCrystal& lcd, Point direction)
 void print_direction_right(LiquidCrystal& lcd, Point direction)
 {
     lcd.print("Turn ");
-    lcd.print(static_cast<int>(direction.angle().deg()) - 180);
+    lcd.print(360 - static_cast<int>(direction.angle().deg()));
     lcd.print("* Right");
 }
 

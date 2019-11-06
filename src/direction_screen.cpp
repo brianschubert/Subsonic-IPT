@@ -23,7 +23,7 @@ void DirectionScreen::print_direction(Point direction)
         && travel_angle < (backwards + m_snap_tolerance)
         ) {
         handler = m_handlers.backward;
-    } else if (direction.m_x < 0) {
+    } else if (direction.m_y > 0) {
         handler = m_handlers.left;
     } else {
         handler = m_handlers.right;
