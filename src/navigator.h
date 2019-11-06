@@ -81,6 +81,10 @@ class Navigator {
         return m_destinations[m_current_dest];
     }
 
+    Angle current_facing() const {
+        return m_facing;
+    }
+
     /**
      * Changes the current destination of this navigator to the specified
      * point.
