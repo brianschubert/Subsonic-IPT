@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 
+#define SUBSONIC_DEBUG
+
 #include "src/point.h"
 #include "src/navigator.h"
 #include "src/led_array.h"
@@ -18,7 +20,7 @@ namespace {
 
 /// The period of time elapsed between updates for
 /// the LCD and LED array.
-constexpr int REFRESH_PERIOD_MILLI = 200;
+constexpr int REFRESH_PERIOD_MILLI = 500;
 
 /// The maximum expected size for an incoming movement message.
 constexpr size_t MAX_SIM_MESSAGE_LENGTH = 30;
@@ -47,7 +49,8 @@ DirectionScreen g_screen(
     print_direction_backward
 );
 
-double g_max_distance{0};
+/// Prevent division by 0.
+double g_max_distance{1e-8};
 
 double g_last_display_update;
 
@@ -68,6 +71,10 @@ void setup()
     g_screen.lcd().begin(16, 2);
     // Clear the LCD screen.
     g_screen.lcd().clear();
+
+    for (auto button : BUTTON_PINS) {
+        pinMode(button, INPUT_PULLUP);
+    }
 }
 
 void loop()
@@ -80,31 +87,86 @@ void loop()
     g_nav.update_position(position_delta);
     g_nav.update_facing(facing_delta);
 
+#ifdef SUBSONIC_DEBUG
+    if (position_delta.norm() != 0) {
+        Serial.print("Read position delta: (");
+        Serial.print(position_delta.m_x);
+        Serial.print(',');
+        Serial.print(position_delta.m_y);
+        Serial.println(')');
+    }
+    if (facing_delta.m_rad != 0) {
+        Serial.print("Read angle delta: ");
+        Serial.println(facing_delta.deg());
+    }
+    if (position_delta.norm() != 0 || facing_delta.m_rad != 0) {
+        Serial.print("Now at (");
+        Serial.print(g_nav.current_pos().m_x);
+        Serial.print(',');
+        Serial.print(g_nav.current_pos().m_y);
+        Serial.print(") facing ");
+        Serial.println(g_nav.current_facing().deg());
+    }
+#endif
+
+    auto button_pressed = check_buttons();
+    switch (button_pressed) {
+        case ButtonAction::Set: {
+            g_nav.overwrite_destination(g_nav.current_pos());
+#ifdef SUBSONIC_DEBUG
+            Serial.print("Overriding destination #");
+            Serial.println(g_nav.current_destination_index());
+#endif
+            break;
+        }
+        case ButtonAction::Cycle: {
+#ifdef SUBSONIC_DEBUG
+            Serial.println("Cycling destinations.");
+#endif
+            g_nav.cycle_destination();
+            break;
+        }
+        case ButtonAction::None:break;
+    }
+
     if (time - g_last_display_update >= REFRESH_PERIOD_MILLI) {
         g_last_display_update = time;
-        auto button_pressed = check_buttons();
-        switch (button_pressed) {
-            case ButtonAction::Set: {
-                g_nav.overwrite_destination(g_nav.current_pos());
-                break;
-            }
-            case ButtonAction::Cycle: {
-                g_nav.cycle_destination();
-                break;
-            }
-            case ButtonAction::None: break;
-        }
 
         Point user_direction = g_nav.compute_direction();
         auto direction_dist = user_direction.norm();
 
+#ifdef SUBSONIC_DEBUG
+//        Serial.print("Giving direction {");
+//        Serial.print(user_direction.m_x);
+//        Serial.print(',');
+//        Serial.print(user_direction.m_y);
+//        Serial.print("} : Turn ");
+//        Serial.print(user_direction.angle().deg());
+//        Serial.print("* and go ");
+//        Serial.print(direction_dist);
+//        Serial.println("m");
+#endif
+
         if (direction_dist > g_max_distance) {
             g_max_distance = direction_dist;
+#ifdef SUBSONIC_DEBUG
+            Serial.print("Setting new max distance to ");
+            Serial.println(direction_dist);
+#endif
         }
 
+#ifdef SUBSONIC_DEBUG
+//        Serial.print("Illuminating ");
+//        Serial.print(direction_dist / g_max_distance);
+//        Serial.println(" percent of LEDs");
+#endif
         g_led_array.activate_led_percent(direction_dist / g_max_distance);
         g_screen.print_direction(user_direction);
     }
+
+#ifdef SUBSONIC_DEBUG
+    delay(100);  // TODO REMOVE
+#endif
 }
 
 namespace {
