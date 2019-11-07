@@ -101,7 +101,7 @@ double g_max_distance{1e-9};
  * The time in milliseconds since device startup when the device's display
  * was last updated.
  */
-double g_last_display_update;
+unsigned long g_last_display_update;
 
 /**
  * Whether a button is currently being pressed.
@@ -136,7 +136,7 @@ void setup()
     Serial.begin(9600);
     // Configure whether the LED array should use PWM when illuminating
     // LEDS
-    g_led_array.set_pwm(false);
+    g_led_array.set_pwm(true);
 
     // Initialize the LCD library for a 16x2 character display.
     g_screen.lcd().begin(16, 2);
@@ -146,6 +146,11 @@ void setup()
     // Set the pin modes of the button pins.
     for (auto button : BUTTON_PINS) {
         pinMode(button, INPUT_PULLUP);
+    }
+
+    // Set the pin modes of the LED pins.
+    for (auto led : LED_PINS) {
+        pinMode(led, OUTPUT);
     }
 }
 
@@ -232,7 +237,7 @@ void loop()
 #endif
         // Illuminate a number of LEDs proportional to the device's distance
         // from the target destination.
-        g_led_array.activate_led_percent(direction_dist / g_max_distance);
+        g_led_array.activate_led_percent(1- (direction_dist / g_max_distance));
         // Print the guidance direction to the LCD screen.
         g_screen.print_direction(user_direction);
     }
@@ -251,7 +256,6 @@ ButtonAction check_buttons()
             g_button_pressed = true;
             return static_cast<ButtonAction>(button);
         }
-        g_button_pressed = false;
     }
     g_button_pressed = false;
     return ButtonAction::None;
