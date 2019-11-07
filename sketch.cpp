@@ -245,11 +245,15 @@ ButtonAction check_buttons()
     // Check each button bin for a low voltage.
     for (auto button : BUTTON_PINS) {
         if (digitalRead(button) == LOW) {
+            if (g_button_pressed) {
+                return ButtonAction::None;
+            }
             g_button_pressed = true;
             return static_cast<ButtonAction>(button);
         }
         g_button_pressed = false;
     }
+    g_button_pressed = false;
     return ButtonAction::None;
 }
 
