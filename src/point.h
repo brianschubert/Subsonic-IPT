@@ -22,23 +22,33 @@ struct Angle {
         return m_rad * 180.0 / M_PI;
     }
 
-    bool is_nan() const {
+    bool is_nan() const
+    {
         return isnan(m_rad);
+    }
+
+    Angle& normalize()
+    {
+        m_rad = fmod(m_rad, 2 * M_PI);
+        if (m_rad < 0) {
+            m_rad += 2 * M_PI;
+        }
+        return *this;
     }
 
     static Angle from_degrees(double degrees)
     {
-        return {degrees * M_PI / 180};
+        return Angle{degrees * M_PI / 180}.normalize();
     }
 
     friend Angle operator+(Angle first, Angle second)
     {
-        return {first.m_rad + second.m_rad};
+        return Angle{first.m_rad + second.m_rad}.normalize();
     }
 
     friend Angle operator-(Angle first, Angle second)
     {
-        return {first.m_rad - second.m_rad};
+        return Angle{first.m_rad - second.m_rad}.normalize();
     }
 
     friend bool operator<(Angle first, Angle second)
@@ -53,7 +63,7 @@ struct Angle {
 
     Angle operator-() const
     {
-        return {m_rad};
+        return {-m_rad};
     }
 };
 
