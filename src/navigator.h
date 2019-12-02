@@ -35,67 +35,6 @@ class Navigator {
   public:
     Navigator() = default;
 
-    /**
-     * Updates the current position of this navigator.
-     *
-     * Declared as inline since the implementation is trivial
-     */
-    void update_position(Point displacement)
-    {
-        m_current_pos = m_current_pos + displacement;
-    }
-
-    /**
-     * Updates the direction that this navigator is facing.
-     *
-     * Declared as inline since the implementation is trivial
-     */
-    void update_facing(Angle turn)
-    {
-        m_facing = m_facing + turn;
-    }
-
-    /**
-     * Rotates the current target destination of this navigator.
-     *
-     * Declared as inline since the implementation is trivial
-     */
-    void cycle_destination()
-    {
-        m_current_dest = (m_current_dest + 1) % DESTINATION_COUNT;
-    }
-
-    [[nodiscard]]
-    /**
-     * Returns the index of the current destination of this navigator.
-     *
-     * Declared as inline since the implementation is trivial
-     */
-    size_t current_destination_index() const
-    {
-        return m_current_dest;
-    }
-
-    Point current_destination() const
-    {
-        return m_destinations[m_current_dest];
-    }
-
-    Angle current_facing() const {
-        return m_facing;
-    }
-
-    /**
-     * Changes the current destination of this navigator to the specified
-     * point.
-     *
-     * Declared as inline since the implementation is trivial
-     */
-    void overwrite_destination(Point new_dest)
-    {
-        m_destinations[m_current_dest] = new_dest;
-    }
-
     [[nodiscard]]
     /**
      * Computes the vector relative to this navigator's current position
@@ -110,6 +49,74 @@ class Navigator {
     Point current_pos() const
     {
         return m_current_pos;
+    }
+
+    [[nodiscard]]
+    /**
+     * Returns the index of the current destination of this navigator.
+     *
+     * Declared as inline since the implementation is trivial
+     */
+    size_t current_destination_index() const
+    {
+        return m_current_dest;
+    }
+
+    [[nodiscard]]
+    Point current_destination() const
+    {
+        return m_destinations[m_current_dest];
+    }
+
+    [[nodiscard]]
+    Angle current_facing() const
+    {
+        return m_facing;
+    }
+
+    /**
+     * Updates the current position of this navigator.
+     *
+     * Declared as inline since the implementation is trivial
+     */
+    void apply_displacement(Point displacement)
+    {
+        m_current_pos = m_current_pos + displacement;
+    }
+
+    /**
+     * Updates the direction that this navigator is facing.
+     *
+     * Declared as inline since the implementation is trivial
+     */
+    void apply_turn(Angle turn)
+    {
+        m_facing = m_facing + turn;
+    }
+
+    /**
+     * Rotates the current target destination of this navigator.
+     *
+     * Declared as inline since the implementation is trivial
+     */
+    void cycle_destination()
+    {
+        m_current_dest = (m_current_dest + 1) % DESTINATION_COUNT;
+    }
+
+    /**
+     * Changes the current destination of this navigator to the specified
+     * point.
+     *
+     * Declared as inline since the implementation is trivial
+     */
+    void overwrite_destination(Point new_dest)
+    {
+        m_destinations[m_current_dest] = new_dest;
+    }
+
+    void set_facing(Angle facing) {
+        m_facing = facing;
     }
 };
 
