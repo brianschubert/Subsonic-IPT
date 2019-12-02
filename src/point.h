@@ -36,6 +36,12 @@ struct Angle {
         return *this;
     }
 
+    Angle conjugate() {
+        auto conj = Angle{-m_rad};
+        conj.normalize();
+        return conj;
+    }
+
     static Angle from_degrees(double degrees)
     {
         return Angle{degrees * M_PI / 180}.normalize();
@@ -71,6 +77,7 @@ struct Angle {
  * A POD representation of a point in two-dimensional space.
  */
 struct Point {
+
     /// The horizontal displacement of this point.
     double m_x;
 
@@ -81,7 +88,7 @@ struct Point {
     /// Returns the norm of the R2 vector associated with this point.
     double norm() const
     {
-        return sqrt(m_x * m_x + m_x * m_y);
+        return sqrt(m_x * m_x + m_y * m_y);
     }
 
     /**
