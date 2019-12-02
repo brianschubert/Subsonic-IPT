@@ -11,8 +11,19 @@
 namespace {
 using namespace subsonic_ipt;
 
-Button button_status = Button::ButtonNone;
+/**
+ * The current and previous state of the buttons used by this sketch.
+ */
+struct {
+    /// The state of the buttons during the previous refresh.
+    Button previous_buttons{ButtonNone};
+    /// The current state of the buttons since the last refresh.
+    Button current_buttons{ButtonNone};
+} button_status;
 
+/**
+ * Returns the one-bit mask associated with the given button pin.
+ */
 Button pin_to_flag(ButtonPin pin)
 {
     switch (pin) {
@@ -27,34 +38,50 @@ Button pin_to_flag(ButtonPin pin)
         }
     }
 }
+
+/**
+ * Returns `true`  if all of the bits set in the given mask are 1s in
+ * the specified target.
+ */
+inline bool button_mask_matches(Button target, Button mask)
+{
+    return (target & mask) == mask;
+}
 } // namespace
 
 namespace subsonic_ipt {
 
-Button read_buttons()
+void refresh_buttons()
 {
-    Button current_buttons{ButtonNone};
+    button_status.previous_buttons = button_status.current_buttons;
 
     // Check each button bin for a low voltage.
     for (auto pin : BUTTON_PINS) {
         if (digitalRead(pin) == LOW) {
-            current_buttons = static_cast<Button>(current_buttons & pin_to_flag(static_cast<ButtonPin>(pin)));
+            auto flag = pin_to_flag(static_cast<ButtonPin>(pin));
+            button_status.current_buttons = static_cast<Button>(button_status.current_buttons & flag);
         }
     }
-
-    // Filter out all of the buttons there were already depressed
-    auto new_buttons = static_cast<Button>(current_buttons & ~button_status);
-
-    // Remove buttons that are now off from button status, and then add
-    // buttons that were just turned on.
-    button_status = static_cast<Button>((button_status & current_buttons) | new_buttons);
-
-    return new_buttons;
 }
 
-bool check_buttons(Button button_flags)
+bool button_closed(Button button_flag)
 {
-    return button_flags & button_status;
+    return button_mask_matches(button_status.current_buttons, button_flag);
+}
+
+bool button_open(Button button_flag)
+{
+    return button_mask_matches(static_cast<Button>(~button_status.current_buttons), button_flag);
+}
+
+bool button_closed_once(Button button_flag)
+{
+    return button_open(button_flag) && !button_mask_matches(button_status.previous_buttons, button_flag);
+}
+
+bool button_open_once(Button button_flag)
+{
+    return button_closed(button_flag) && button_mask_matches(button_status.previous_buttons, button_flag);
 }
 
 } // namespace subsonic_ipt

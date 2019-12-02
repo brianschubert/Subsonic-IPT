@@ -228,31 +228,28 @@ namespace {
 
 void subsonic_loop()
 {
-    // Check if a button is depressed
-    auto new_button_presses = read_buttons();
-    switch (new_button_presses) {
-        case Button::ButtonSet: {
-            g_nav.overwrite_destination(g_nav.current_pos());
-            break;
-        }
-        case Button::ButtonCycle: {
-            g_nav.cycle_destination();
-            break;
-        }
-        default: {
-            break;
-        }
+    // Update the state of the buttons/switches
+    refresh_buttons();
+
+    if (button_closed_once(ButtonSet)) {
+        g_nav.overwrite_destination(g_nav.current_pos());
+    }
+
+    if (button_closed_once(ButtonCycle)) {
+        g_nav.cycle_destination();
     }
 
     const auto time = millis();
     // Check if sufficient time has passed since the last display update.
     if (time - g_last_display_update >= REFRESH_PERIOD_MILLI) {
         g_last_display_update = time;
+#ifdef SUBSONIC_DEBUG_SERIAL
         Serial.print("Now at (");
         Serial.print(g_nav.current_pos().m_x);
         Serial.print(',');
         Serial.print(g_nav.current_pos().m_y);
         Serial.println(")");
+#endif
 
         // Compute the guidance direction that should be displayed to the user.
         Point user_direction = g_nav.compute_direction();
