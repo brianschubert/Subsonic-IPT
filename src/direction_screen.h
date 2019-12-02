@@ -20,9 +20,12 @@ class DirectionScreen {
 
     Angle m_snap_tolerance;
 
+    double m_arrival_tolerance;
+
     void (*m_title_line)(LiquidCrystal&);
 
     struct {
+        DirectionHandler arrived;
         DirectionHandler forward;
         DirectionHandler left;
         DirectionHandler right;
@@ -33,15 +36,18 @@ class DirectionScreen {
     DirectionScreen(
         const LiquidCrystal& lcd,
         Angle snap_tolerance,
+        double arrival_tolerance,
         void title(LiquidCrystal&),
+        DirectionHandler arrival_handler,
         DirectionHandler forward_handler,
         DirectionHandler left_handler,
         DirectionHandler right_handler,
         DirectionHandler backward_handler
     ) : m_lcd{lcd},
-        m_snap_tolerance{snap_tolerance},
+        m_snap_tolerance{snap_tolerance.normalize()},
+        m_arrival_tolerance{arrival_tolerance},
         m_title_line{title},
-        m_handlers{forward_handler, left_handler, right_handler, backward_handler} {}
+        m_handlers{arrival_handler, forward_handler, left_handler, right_handler, backward_handler} {}
 
     LiquidCrystal& lcd()
     {

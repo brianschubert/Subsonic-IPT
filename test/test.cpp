@@ -25,7 +25,7 @@ bool test_navigator_directions()
 {
     Navigator nav{};
 
-    nav.update_position(Point{10, 0});
+    nav.apply_displacement(Point{10, 0});
 
     Point direction = nav.compute_direction();
 

@@ -9,6 +9,9 @@
 #include "src/navigator.h"
 #include "src/led_array.h"
 #include "src/direction_screen.h"
+#include "src/buttons.h"
+#include "src/mpu.h"
+#include "src/pin.h"
 
 // When defined, debugging information will be printed to
 // the serial output.
@@ -20,15 +23,11 @@
 
 using namespace subsonic_ipt;
 
-// Sketch declarations placed in anonymous namespace to given the
-// symbols internal linkage.
-namespace {
-
 /**
  * The period of time elapsed between updates for
  * the LCD and LED array.
  */
-constexpr int REFRESH_PERIOD_MILLI = 500;
+constexpr int REFRESH_PERIOD_MILLI = 300;
 
 /**
  * The maximum expected size for an incoming movement message.
@@ -40,6 +39,35 @@ constexpr size_t MAX_SIM_MESSAGE_LENGTH = 30;
  * to have "arrived".
  */
 constexpr double ARRIVAL_THRESHOLD = 0.5;
+
+constexpr uint32_t I2C_CLOCK_RATE = 400000;
+
+constexpr uint16_t SERIAL_PORT = 9600;
+
+constexpr struct {
+    uint8_t x = 16;
+    uint8_t y = 2;
+} LCD_DIMENSIONS;
+
+//constexpr double EXPECTED_GRAVITY = 9.81;
+
+
+constexpr double PITCH_VEL_MAPPING[][2] = {
+    {10, 0},
+    {30, 0.3},
+    {45, 1},
+    {65, 2.0},
+    {90, 3.0},
+};
+
+
+/******************************************************************************\
+ * Internal definitions
+ *
+ * Sketch declarations placed in anonymous namespace to given the
+ * symbols internal linkage.
+\******************************************************************************/
+namespace {
 
 /**
  * Wrapper modeling the array of LEDs being used by this sketch.
@@ -55,6 +83,11 @@ Navigator g_nav{};
  * Prints a title line to the given LCD screen.
  */
 void print_screen_title(LiquidCrystal& lcd);
+
+/**
+ * Prints a "you have arrived" direction to the given LCD screen.
+ */
+void print_direction_arrived(LiquidCrystal& lcd, Point direction);
 
 /**
  * Prints a "move-forward" direction to the given LCD screen.
@@ -80,9 +113,18 @@ void print_direction_backward(LiquidCrystal& lcd, Point direction);
  * Wrapper around the SparkFun LCD api for displaying guidance directions.
  */
 DirectionScreen g_screen(
-    LiquidCrystal(13, 12, 11, 10, 9, 8),
+    LiquidCrystal(
+        LCD_PINS.rs,
+        LCD_PINS.enable,
+        LCD_PINS.data[0],
+        LCD_PINS.data[1],
+        LCD_PINS.data[2],
+        LCD_PINS.data[3]
+    ),
     Angle::from_degrees(10.0),
+    ARRIVAL_THRESHOLD,
     print_screen_title,
+    print_direction_arrived,
     print_direction_forward,
     print_direction_left,
     print_direction_right,
@@ -101,7 +143,9 @@ double g_max_distance{1e-9};
  * The time in milliseconds since device startup when the device's display
  * was last updated.
  */
-unsigned long g_last_display_update;
+unsigned long g_last_display_update{0};
+
+unsigned long g_last_position_update_u{0};
 
 /**
  * Whether a button is currently being pressed.
@@ -112,20 +156,21 @@ unsigned long g_last_display_update;
 bool g_button_pressed{false};
 
 /**
- * Returns the current state of the device's buttons.
+ * Callback function that is run repeatedly while the MPU is waiting
+ * for new data.
  */
-ButtonAction check_buttons();
+void subsonic_loop();
 
-[[nodiscard]]
-/**
- * Writes the estimated displacements of the device to the provided
- * structures.
- *
- * Returns true if new data was written.
- */
-bool read_deltas(Point&, Angle&);
+void update_position(const DeviceMotion& device_motion);
+
+double pitch_to_vel(Angle pitch);
 
 } // namespace
+
+
+/******************************************************************************\
+ * Public definitions
+\******************************************************************************/
 
 /**
  * Arduino initialization.
@@ -133,13 +178,13 @@ bool read_deltas(Point&, Angle&);
 void setup()
 {
     // Open a serial connection on port 9600
-    Serial.begin(9600);
+    Serial.begin(SERIAL_PORT);
     // Configure whether the LED array should use PWM when illuminating
     // LEDS
     g_led_array.set_pwm(true);
 
     // Initialize the LCD library for a 16x2 character display.
-    g_screen.lcd().begin(16, 2);
+    g_screen.lcd().begin(LCD_DIMENSIONS.x, LCD_DIMENSIONS.y);
     // Clear the LCD screen.
     g_screen.lcd().clear();
 
@@ -152,6 +197,20 @@ void setup()
     for (auto led : LED_PINS) {
         pinMode(led, OUTPUT);
     }
+
+    g_screen.lcd().print("Initializing MPU");
+    g_screen.lcd().setCursor(0, 1);
+    g_screen.lcd().print("Calibrating...");
+
+    auto mpu_status = setup_mpu(I2C_CLOCK_RATE);
+    if (mpu_status != 0) {
+        g_screen.lcd().clear();
+        g_screen.lcd().setCursor(0, 0);
+        g_screen.lcd().print("FAILED TO START");
+        g_screen.lcd().setCursor(0, 1);
+        g_screen.lcd().print("MPU - [STOPPING]");
+        while (true) { /* loop forever */}
+    }
 }
 
 /**
@@ -159,62 +218,38 @@ void setup()
  */
 void loop()
 {
+    run_mpu_loop(subsonic_loop, update_position);
+}
+
+/******************************************************************************\
+ * Internal implementations
+\******************************************************************************/
+namespace {
+
+void subsonic_loop()
+{
+    // Update the state of the buttons/switches
+    refresh_buttons();
+
+    if (button_closed_once(ButtonSet)) {
+        g_nav.overwrite_destination(g_nav.current_pos());
+    }
+
+    if (button_closed_once(ButtonCycle)) {
+        g_nav.cycle_destination();
+    }
+
     const auto time = millis();
-    Point position_delta{};
-    Angle facing_delta{};
-
-    // Read the next estimated displacement for the device.
-    if (read_deltas(position_delta, facing_delta)) {
-        g_nav.update_position(position_delta);
-        g_nav.update_facing(facing_delta);
-    }
-
+    // Check if sufficient time has passed since the last display update.
+    if (time - g_last_display_update >= REFRESH_PERIOD_MILLI) {
+        g_last_display_update = time;
 #ifdef SUBSONIC_DEBUG_SERIAL
-    if (position_delta.norm() != 0) {
-        Serial.print("Read position delta: (");
-        Serial.print(position_delta.m_x);
-        Serial.print(',');
-        Serial.print(position_delta.m_y);
-        Serial.println(')');
-    }
-    if (facing_delta.m_rad != 0) {
-        Serial.print("Read angle delta: ");
-        Serial.println(facing_delta.deg());
-    }
-    if (position_delta.norm() != 0 || facing_delta.m_rad != 0) {
         Serial.print("Now at (");
         Serial.print(g_nav.current_pos().m_x);
         Serial.print(',');
         Serial.print(g_nav.current_pos().m_y);
-        Serial.print(") facing ");
-        Serial.println(g_nav.current_facing().deg());
-    }
+        Serial.println(")");
 #endif
-
-    // Check if a button is depressed
-    auto button_pressed = check_buttons();
-    switch (button_pressed) {
-        case ButtonAction::Set: {
-            g_nav.overwrite_destination(g_nav.current_pos());
-#ifdef SUBSONIC_DEBUG_SERIAL
-            Serial.print("Overriding destination #");
-            Serial.println(g_nav.current_destination_index());
-#endif
-            break;
-        }
-        case ButtonAction::Cycle: {
-#ifdef SUBSONIC_DEBUG_SERIAL
-            Serial.println("Cycling destinations.");
-#endif
-            g_nav.cycle_destination();
-            break;
-        }
-        case ButtonAction::None:break;
-    }
-
-    // Check if sufficient time has passed since the last display update.
-    if (time - g_last_display_update >= REFRESH_PERIOD_MILLI) {
-        g_last_display_update = time;
 
         // Compute the guidance direction that should be displayed to the user.
         Point user_direction = g_nav.compute_direction();
@@ -237,66 +272,10 @@ void loop()
 #endif
         // Illuminate a number of LEDs proportional to the device's distance
         // from the target destination.
-        g_led_array.activate_led_percent(1- (direction_dist / g_max_distance));
+        g_led_array.activate_led_percent(1 - (direction_dist / g_max_distance));
         // Print the guidance direction to the LCD screen.
         g_screen.print_direction(user_direction);
     }
-}
-
-namespace {
-
-ButtonAction check_buttons()
-{
-    // Check each button bin for a low voltage.
-    for (auto button : BUTTON_PINS) {
-        if (digitalRead(button) == LOW) {
-            if (g_button_pressed) {
-                return ButtonAction::None;
-            }
-            g_button_pressed = true;
-            return static_cast<ButtonAction>(button);
-        }
-    }
-    g_button_pressed = false;
-    return ButtonAction::None;
-}
-
-bool read_deltas(Point& pos_delta, Angle& facing_dela)
-{
-#ifdef ACCEL_SIMULATION_MODE
-    // Allocate stack space for the message string.
-    char instr_buffer[MAX_SIM_MESSAGE_LENGTH + 1];
-    if (Serial.available()) {
-        // Attempt to read a command from the serial input.
-        auto bytes_read = Serial.readBytesUntil(';', instr_buffer, MAX_SIM_MESSAGE_LENGTH);
-        instr_buffer[bytes_read] = 0; // Add trailing null for c-style string
-
-        if (bytes_read == 0) {
-            return false;
-        }
-
-        // The current scanning position while parsing whitespace-separated
-        // floating-point values from the command
-        char* finger = instr_buffer;
-        // The three floating-point parts of the recieved command.
-        double parts[3];
-
-        // Parse the components of the command.
-        // We assume that the command will contain EXACTLY three
-        // floating-point vaues.
-        for (auto i = 0; *finger; ++i) {
-            parts[i] = strtod(finger, &finger);
-        }
-
-        pos_delta = Point{parts[0], parts[1]};
-        facing_dela = Angle::from_degrees(parts[2]);
-        return true;
-    }
-    return false;
-#else
-    // TODO Read accelerometer
-    return false;
-#endif
 }
 
 void print_screen_title(LiquidCrystal& lcd)
@@ -309,6 +288,10 @@ void print_screen_title(LiquidCrystal& lcd)
     lcd.print(",");
     lcd.print(static_cast<int>(destination.m_y));
     lcd.print(")");
+}
+
+void print_direction_arrived(LiquidCrystal& lcd, Point direction) {
+    lcd.print("You Have Arrived");
 }
 
 void print_direction_forward(LiquidCrystal& lcd, Point direction)
@@ -335,6 +318,61 @@ void print_direction_right(LiquidCrystal& lcd, Point direction)
 void print_direction_backward(LiquidCrystal& lcd, Point direction)
 {
     lcd.print("Turn around");
+}
+
+void update_position(const DeviceMotion& device_motion)
+{
+    auto current_time = micros();
+    auto time_delta = static_cast<double>(current_time - g_last_position_update_u);
+    time_delta /= 1e6;             // convert microseconds to seconds
+//    constexpr uint32_t MAX_ACCEL = 16384;
+//
+//    // Compute acceleration * time
+//    Point device_accel{
+//        EXPECTED_GRAVITY * world_accel.x * time_delta / MAX_ACCEL,
+//        EXPECTED_GRAVITY * world_accel.y * time_delta / MAX_ACCEL,
+//    };
+//
+//    // Temporarily filter out very very small accelerations to
+//    // reduce noise in velocity
+//    if (abs(world_accel.x) < 20) {
+//        device_accel.m_x = 0;
+//    }
+//    if (abs(world_accel.y) < 20) {
+//        device_accel.m_y = 0;
+//    }
+//
+//    // Update v = v_0 + at
+//    g_nav.apply_acceleration(device_accel);
+//    // Update displacement = 0.5 * at^2 + vt
+//    g_nav.move(
+//        time_delta * (0.5 * device_accel + g_nav.current_vel())
+//    );
+
+    // Yaw is reported as a clockwise rotation, so we flip its sign
+    // to change to the counterclockwise rotation used by the navigation
+    // logic.
+    auto yaw_angle = Angle{-device_motion.yaw};
+    yaw_angle.normalize();
+    g_nav.set_facing(yaw_angle);
+    g_nav.apply_displacement(
+        time_delta * pitch_to_vel(Angle{device_motion.pitch}) * Point::unit_from_angle(yaw_angle)
+    );
+
+    // Recompute current time to account for time long to arithmetic
+    g_last_position_update_u = micros();
+
+}
+
+double pitch_to_vel(Angle pitch)
+{
+    for (const auto pair : PITCH_VEL_MAPPING) {
+        if (pitch.deg() < pair[0]) {
+            return pair[1];
+        }
+    }
+    size_t last_pos = (sizeof(PITCH_VEL_MAPPING) / sizeof(PITCH_VEL_MAPPING[0])) - 1;
+    return PITCH_VEL_MAPPING[last_pos][1];
 }
 
 } // namespace

@@ -27,7 +27,7 @@ include_directories(
 
 # use this target for a quick compile-only check of your CPP files
 # add more source (CPP) files here when you add them to the sketch
-add_executable(arduino-clion-minimal sketch.cpp pseudo_api.h src/point.h src/navigator.h src/navigator.cpp src/led_array.h src/pin.h src/direction_screen.cpp src/direction_screen.h)
+add_executable(arduino-clion-minimal imu_test.cpp sketch.cpp src/point.h src/navigator.h src/navigator.cpp src/led_array.h src/pin.h src/direction_screen.cpp src/direction_screen.h src/buttons.cpp src/buttons.h)
 set_target_properties(arduino-clion-minimal PROPERTIES LINKER_LANGUAGE CXX)
 
 # use the following two targets for building and uploading sketches from clion.
