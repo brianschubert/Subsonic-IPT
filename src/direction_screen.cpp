@@ -17,11 +17,19 @@ void DirectionScreen::print_direction(Point direction)
     auto travel_angle = direction.angle();
     DirectionHandler handler;
 
-    if ((travel_angle < m_snap_tolerance && travel_angle > -m_snap_tolerance) || travel_angle.is_nan()) {
+    // Whether the travel angle is within the snap tolerance of the forward direction.
+    bool near_forward = ((travel_angle < m_snap_tolerance) || (travel_angle > m_snap_tolerance.conjugate()));
+    // Whether the travel angle is with the snap tolerance of the backward direction.
+    bool near_backward = (travel_angle > (backwards - m_snap_tolerance))
+        && (travel_angle < (backwards + m_snap_tolerance));
+
+    // When the device is at its original position, we denote the travel angle
+    // as NaN. When this occurs, invoke the forward handler.
+    if (direction.norm() <= m_arrival_tolerance || travel_angle.is_nan()) {
+        handler = m_handlers.arrived;
+    } else if (near_forward) {
         handler = m_handlers.forward;
-    } else if (travel_angle > (backwards - m_snap_tolerance)
-        && travel_angle < (backwards + m_snap_tolerance)
-        ) {
+    } else if (near_backward) {
         handler = m_handlers.backward;
     } else if (direction.m_y > 0) {
         handler = m_handlers.left;
