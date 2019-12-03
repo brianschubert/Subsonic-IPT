@@ -233,7 +233,7 @@ void setup()
     g_screen.lcd().print("Press any button");
     g_screen.lcd().setCursor(0, 1);
     g_screen.lcd().print("for calibration");
-    while (!button_any_tap_once()) {} // Wait for any button to be pressed
+    while (!button_any_tap_once()) refresh_buttons(); // Wait for any button to be pressed
 
     g_screen.lcd().print("Initializing MPU");
     g_screen.lcd().setCursor(0, 1);
