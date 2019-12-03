@@ -22,7 +22,6 @@ include_directories(
 
         # Project-specified added libraries
         ${ARDUINO_INSTALL_LIBRARIES}/LiquidCrystal/src
-        ${ARDUINO_USER_LIBRARIES}/SparkFun_ADXL345_Arduino_Library/src
 )
 
 # use this target for a quick compile-only check of your CPP files
