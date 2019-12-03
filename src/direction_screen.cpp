@@ -1,6 +1,12 @@
-//
-// Created by brian on 11/6/19.
-//
+/**
+ * direction_screen.cpp - Implementation for the direction screen interface.
+ *
+ * Copyright (c) 2019 Brian Schubert
+ *
+ * This file is distributed under the MIT License. If a copy of the
+ * MIT License was not distributed with this file, you can obtain one
+ * at https://opensource.org/licenses/MIT.
+ */
 
 #include "direction_screen.h"
 

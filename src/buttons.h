@@ -1,6 +1,13 @@
-//
-// Created by brian on 11/29/19.
-//
+/**
+ * buttons.h - Interface for detecting the state of the switches/buttons used
+ *             by this sketch.
+ *
+ * Copyright (c) 2019 Brian Schubert
+ *
+ * This file is distributed under the MIT License. If a copy of the
+ * MIT License was not distributed with this file, you can obtain one
+ * at https://opensource.org/licenses/MIT.
+ */
 
 #ifndef SUBSONIC_IPT_BUTTONS_H
 #define SUBSONIC_IPT_BUTTONS_H

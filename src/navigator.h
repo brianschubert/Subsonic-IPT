@@ -1,6 +1,13 @@
-//
-// Created by brian on 11/2/19.
-//
+/**
+ * navigator.h - Utilities for tracking a device's position and producing
+ *               travel directions to known waypoints.
+ *
+ * Copyright (c) 2019 Brian Schubert
+ *
+ * This file is distributed under the MIT License. If a copy of the
+ * MIT License was not distributed with this file, you can obtain one
+ * at https://opensource.org/licenses/MIT.
+ */
 
 #ifndef SUBSONIC_IPT_NAVIGATOR_H
 #define SUBSONIC_IPT_NAVIGATOR_H
