@@ -29,11 +29,15 @@ struct Angle {
     }
 
     [[nodiscard]]
+    /// Returns true is this angle's value is NaN.
     bool is_nan() const
     {
         return isnan(m_rad);
     }
 
+    /**
+     * Normalizes this angles value to a radian on the interval [0, 2pi).
+     */
     Angle& normalize()
     {
         m_rad = fmod(m_rad, 2 * M_PI);
@@ -44,6 +48,9 @@ struct Angle {
     }
 
     [[nodiscard]]
+    /**
+     * Returns the conjugate of this angle.
+     */
     Angle conjugate() {
         auto conj = Angle{-m_rad};
         conj.normalize();
@@ -51,6 +58,9 @@ struct Angle {
     }
 
     [[nodiscard]]
+    /**
+     * Constructs an angle with the given value in degrees.
+     */
     static Angle from_degrees(double degrees)
     {
         return Angle{degrees * M_PI / 180}.normalize();
@@ -110,6 +120,10 @@ struct Point {
     }
 
     [[nodiscard]]
+    /**
+     * Returns the angle between the vector associated with this point and
+     * the +x axis.
+     */
     Angle angle() const
     {
         if (m_x == 0) {
@@ -138,6 +152,10 @@ struct Point {
         }
     }
 
+    /**
+     * Constructs a point that corresponds to the unit vector with the given
+     * angle between itself and the +x axis.
+     */
     static Point unit_from_angle(Angle angle)
     {
         return {cos(angle.m_rad), sin(angle.m_rad)};
