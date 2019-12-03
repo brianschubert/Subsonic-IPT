@@ -22,6 +22,7 @@ struct Angle {
         return m_rad * 180.0 / M_PI;
     }
 
+    [[nodiscard]]
     bool is_nan() const
     {
         return isnan(m_rad);
@@ -36,12 +37,14 @@ struct Angle {
         return *this;
     }
 
+    [[nodiscard]]
     Angle conjugate() {
         auto conj = Angle{-m_rad};
         conj.normalize();
         return conj;
     }
 
+    [[nodiscard]]
     static Angle from_degrees(double degrees)
     {
         return Angle{degrees * M_PI / 180}.normalize();
