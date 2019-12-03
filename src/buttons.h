@@ -55,6 +55,13 @@ bool button_closed_once(Button button_flag);
  */
 bool button_open_once(Button button_flag);
 
+
+[[nodiscard]]
+/**
+ * Returns true if any button was closed since the last refresh.
+ */
+bool button_any_tap_once();
+
 }
 
 #endif //SUBSONIC_IPT_BUTTONS_H
