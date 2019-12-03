@@ -17,10 +17,6 @@
 // the serial output.
 #define SUBSONIC_DEBUG_SERIAL
 
-// When defined, this sketch will receive simulated movement data
-// from a serial input instead of processing input from an accelerometer.
-#define ACCEL_SIMULATION_MODE
-
 using namespace subsonic_ipt;
 
 /**
@@ -30,20 +26,24 @@ using namespace subsonic_ipt;
 constexpr int REFRESH_PERIOD_MILLI = 300;
 
 /**
- * The maximum expected size for an incoming movement message.
- */
-constexpr size_t MAX_SIM_MESSAGE_LENGTH = 30;
-
-/**
  * Whenever the device is with this distance of a target, it is considered
  * to have "arrived".
  */
 constexpr double ARRIVAL_THRESHOLD = 0.5;
 
+/**
+ * The clock rate used for I2C communication with the MPU.
+ */
 constexpr uint32_t I2C_CLOCK_RATE = 400000;
 
+/**
+ * The port used by `Serial` for printing debugging information.
+ */
 constexpr uint16_t SERIAL_PORT = 9600;
 
+/**
+ * The dimensions of the LCD screen used by this sketch.
+ */
 constexpr struct {
     uint8_t x = 16;
     uint8_t y = 2;
@@ -51,7 +51,10 @@ constexpr struct {
 
 //constexpr double EXPECTED_GRAVITY = 9.81;
 
-
+/**
+ * An angle-to-velocity mapping for simulating device movement
+ * based on it gyroscopic orientation.
+ */
 constexpr double PITCH_VEL_MAPPING[][2] = {
     {10, 0},
     {30, 0.3},
@@ -145,6 +148,10 @@ double g_max_distance{1e-9};
  */
 unsigned long g_last_display_update{0};
 
+/**
+ * The time in microseconds since device startup when the device's position
+ * was last updated.
+ */
 unsigned long g_last_position_update_u{0};
 
 /**
@@ -161,8 +168,15 @@ bool g_button_pressed{false};
  */
 void subsonic_loop();
 
+/**
+ * Callback function to update the device's position each time a motion
+ * packet is delivered from the MPU
+ */
 void update_position(const DeviceMotion& device_motion);
 
+/**
+ * Returns the horizonal velocity associated with the specified pitched.
+ */
 double pitch_to_vel(Angle pitch);
 
 } // namespace
@@ -209,7 +223,7 @@ void setup()
         g_screen.lcd().print("FAILED TO START");
         g_screen.lcd().setCursor(0, 1);
         g_screen.lcd().print("MPU - [STOPPING]");
-        while (true) { /* loop forever */}
+        while (true) { /* loop forever */ }
     }
 }
 
@@ -290,7 +304,8 @@ void print_screen_title(LiquidCrystal& lcd)
     lcd.print(")");
 }
 
-void print_direction_arrived(LiquidCrystal& lcd, Point direction) {
+void print_direction_arrived(LiquidCrystal& lcd, Point direction)
+{
     lcd.print("You Have Arrived");
 }
 
