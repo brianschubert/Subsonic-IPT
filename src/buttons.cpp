@@ -8,6 +8,9 @@
 
 #include "buttons.h"
 
+/******************************************************************************\
+ * Internal definitions
+\******************************************************************************/
 namespace {
 using namespace subsonic_ipt;
 
@@ -49,6 +52,9 @@ inline bool button_mask_matches(Button target, Button mask)
 }
 } // namespace
 
+/******************************************************************************\
+ * Public definitions
+\******************************************************************************/
 namespace subsonic_ipt {
 
 void refresh_buttons()
@@ -76,12 +82,12 @@ bool button_open(Button button_flag)
 
 bool button_closed_once(Button button_flag)
 {
-    return button_open(button_flag) && !button_mask_matches(button_status.previous_buttons, button_flag);
+    return button_closed(button_flag) && !button_mask_matches(button_status.previous_buttons, button_flag);
 }
 
 bool button_open_once(Button button_flag)
 {
-    return button_closed(button_flag) && button_mask_matches(button_status.previous_buttons, button_flag);
+    return button_open(button_flag) && button_mask_matches(button_status.previous_buttons, button_flag);
 }
 
 } // namespace subsonic_ipt
