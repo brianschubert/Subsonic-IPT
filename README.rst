@@ -8,9 +8,14 @@ This repository was developed by the "Subsonic" team as part of an assignment fo
 Installation
 ------------
 
-This sketch using the `Sparkfun ADXL345 Arduino Library`_ to interface with the ADXL345 accelerometer. The simplest way to install this library is via the library manager included with the Ardunio IDE. Instructions for how to install this library using the library manager can eb found in the `SparkFun tutorial`_ for installing Arduino libraries.
+To install the lastest release of this sketch, simply clone the git repository by running
 
-.. _Sparkfun ADXL345 Arduino Library: https://github.com/sparkfun/SparkFun_ADXL345_Arduino_Library
+.. _code-block: shell
+
+    $ git clone https://github.com/blueschu/Subsonic-IPT.git
+
+This sketch depends on the Arduino LiquidCrystal library. If this library was not included with your Arduino distribution, you can install if by following the steps outlined in the `SparkFun Tutorial`_ for installing Arduino libraries.
+
 .. _SparkFun tutorial: https://learn.sparkfun.com/tutorials/installing-an-arduino-library
 
 Running the Sketch
@@ -42,11 +47,10 @@ Otherwise, you can build the project manually with `cmake` by running the follow
 To build the sketch, run the ``verify`` CMake target.
 To upload the sketch to your Arduino, run the ``upload`` CMake target.
 
-Running with Arduino IDE
+Running with the Arduino IDE
 ------------------------
 
 To run this sketch using the Arduino IDE, rename the ``sketch.cpp`` file to have an ``.ino`` extension. Then, open this repository as you would any other Arduino sketch.
-
 
 
 Credits
