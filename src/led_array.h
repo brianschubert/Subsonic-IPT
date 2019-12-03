@@ -16,15 +16,6 @@
 namespace subsonic_ipt {
 
 /**
- * The number of different brightnesses that LEDArrays should use
- * when PWM mode is enabled.
- *
- * E.g., setting this constant to 3 will result in "dim", "medium" and "full"
- * brightness settings being used.
- */
-constexpr size_t PWN_DEG_FRD{3};
-
-/**
  * An array of physical LEDs that can be used to visual approximate
  * a percentage.
  */
@@ -43,6 +34,15 @@ class LEDArray {
      * greater resolution in LED activation percentages.
      */
     bool m_use_pwm{false};
+
+    /**
+     * The number of different brightnesses that LEDArrays should use
+     * when PWM mode is enabled.
+     *
+     * E.g., setting this constant to 3 will result in "dim", "medium" and "full"
+     * brightness settings being used.
+     */
+    constexpr static size_t PWN_DEG_FRD{3};
 
   public:
     explicit LEDArray(const Pin* pins)
