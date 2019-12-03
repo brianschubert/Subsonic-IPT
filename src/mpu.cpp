@@ -1,7 +1,16 @@
 /**
+ * mpu.cpp - Implementation for motion processing utilities.
+ *
  * Parts of this implementation are based on I2C device class (I2Cdev)
  * demonstration Arduino sketch for MPU6050 class using DMP (MotionApps v2.0).
  * A copy of the license for these sources may be found in vendor/i2cdevlib.
+ *
+ * Copyright (c) 2019 Brian Schubert
+ * Copyright (c) 2012 Jeff Rowberg
+ *
+ * This file is distributed under the MIT License. If a copy of the
+ * MIT License was not distributed with this file, you can obtain one
+ * at https://opensource.org/licenses/MIT.
  */
 
 #define I2CDEV_IMPLEMENTATION I2CDEV_ARDUINO_WIRE
