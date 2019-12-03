@@ -107,11 +107,13 @@ uint8_t setup_mpu(uint32_t clock_rate)
     Serial.println(F("Testing device connections..."));
     Serial.println(g_mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
 
+#ifdef SUBSONIC_MPU_INIT_WAIT
     // Wait for ready
     Serial.println(F("\nSend any character to begin DMP programming and demo: "));
     while (Serial.available() && Serial.read()) {} // empty buffer
     while (!Serial.available()) {}                 // wait for data
     while (Serial.available() && Serial.read()) {} // empty buffer again
+#endif
 
     // load and configure the DMP
     Serial.println(F("Initializing DMP..."));
