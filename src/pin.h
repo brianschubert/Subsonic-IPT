@@ -31,7 +31,6 @@ constexpr struct {
 enum class ButtonPin : Pin {
     Set = 4,
     Cycle = 7,
-    None = 0,
 };
 
 /**
