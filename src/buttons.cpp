@@ -96,5 +96,10 @@ bool button_open_once(Button button_flag)
     return button_open(button_flag) && button_mask_matches(button_status.previous_buttons, button_flag);
 }
 
+bool button_any_tap_once()
+{
+    return (~button_status.previous_buttons & button_status.current_buttons);
+}
+
 } // namespace subsonic_ipt
 

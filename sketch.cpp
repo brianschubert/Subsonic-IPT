@@ -218,6 +218,23 @@ void setup()
         pinMode(led, OUTPUT);
     }
 
+    // Display interactive welcome sequence
+    g_screen.lcd().print("Subsonic IPT");
+    g_screen.lcd().setCursor(0, 1);
+    g_screen.lcd().print(' ');
+
+    for (int i = 0; i < (LCD_DIMENSIONS.x / 2) - 2; ++i) {
+        g_screen.lcd().print("* ");
+        delay(250);
+    }
+
+    g_screen.lcd().clear();
+    g_screen.lcd().setCursor(0, 0);
+    g_screen.lcd().print("Press any button");
+    g_screen.lcd().setCursor(0, 1);
+    g_screen.lcd().print("for calibration");
+    while (!button_any_tap_once()) {} // Wait for any button to be pressed
+
     g_screen.lcd().print("Initializing MPU");
     g_screen.lcd().setCursor(0, 1);
     g_screen.lcd().print("Calibrating...");
