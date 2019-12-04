@@ -66,12 +66,13 @@ namespace subsonic_ipt {
 void refresh_buttons()
 {
     button_status.previous_buttons = button_status.current_buttons;
+    button_status.current_buttons = ButtonNone;
 
     // Check each button bin for a low voltage.
     for (auto pin : BUTTON_PINS) {
         if (digitalRead(pin) == LOW) {
             auto flag = pin_to_flag(static_cast<ButtonPin>(pin));
-            button_status.current_buttons = static_cast<Button>(button_status.current_buttons & flag);
+            button_status.current_buttons = static_cast<Button>(button_status.current_buttons | flag);
         }
     }
 }
@@ -94,6 +95,11 @@ bool button_closed_once(Button button_flag)
 bool button_open_once(Button button_flag)
 {
     return button_open(button_flag) && button_mask_matches(button_status.previous_buttons, button_flag);
+}
+
+bool button_any_tap_once()
+{
+    return (~button_status.previous_buttons & button_status.current_buttons);
 }
 
 } // namespace subsonic_ipt

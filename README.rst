@@ -8,9 +8,9 @@ This repository was developed by the "Subsonic" team as part of an assignment fo
 Installation
 ------------
 
-To install the lastest release of this sketch, simply clone the git repository by running
+To install the latest release of this sketch, simply clone the git repository by running
 
-.. _code-block: shell
+.. code-block:: shell
 
     $ git clone https://github.com/blueschu/Subsonic-IPT.git
 

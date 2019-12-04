@@ -19,9 +19,21 @@
 #include "src/mpu.h"
 #include "src/pin.h"
 
-// When defined, debugging information will be printed to
-// the serial output.
-#define SUBSONIC_DEBUG_SERIAL
+// When defined, a message will be printed to the Serial output whenever
+// a button press registered.
+#define SUBSONIC_DEBUG_SERIAL_BUTTONS
+
+// When defined, the devices current position will be printed periodically
+// to the Serial output.
+#define SUBSONIC_DEBUG_SERIAL_POSITION
+
+// When defined, a message will be printed to the Serial output whenever
+// the devices maximum distance from a waypoint is updated.
+#define SUBSONIC_DEBUG_SERIAL_MAX_DIST
+
+// When defined, a message will be printed to the Serial output each time
+// the LED array is illuminated
+//#define SUBSONIC_DEBUG_SERIAL_LEDS
 
 using namespace subsonic_ipt;
 
@@ -63,10 +75,10 @@ constexpr struct {
  */
 constexpr double PITCH_VEL_MAPPING[][2] = {
     {10, 0},
-    {30, 0.3},
-    {45, 1},
-    {65, 2.0},
-    {90, 3.0},
+    {45, 0.5},
+    {90, 1},
+//    {65, 2.0},
+//    {90, 3.0},
 };
 
 
@@ -199,6 +211,8 @@ void setup()
 {
     // Open a serial connection on port 9600
     Serial.begin(SERIAL_PORT);
+    Serial.println("Starting setup routine...");
+
     // Configure whether the LED array should use PWM when illuminating
     // LEDS
     g_led_array.set_pwm(true);
@@ -218,10 +232,31 @@ void setup()
         pinMode(led, OUTPUT);
     }
 
+    // Display interactive welcome sequence
+    g_screen.lcd().print("Subsonic IPT");
+    g_screen.lcd().setCursor(0, 1);
+    g_screen.lcd().print(' ');
+
+    for (int i = 0; i < (LCD_DIMENSIONS.x / 2) - 2; ++i) {
+        g_screen.lcd().print("* ");
+        delay(250);
+    }
+
+    Serial.println("Waiting for use input to calibrate...");
+    g_screen.lcd().clear();
+    g_screen.lcd().setCursor(0, 0);
+    g_screen.lcd().print("Press any button");
+    g_screen.lcd().setCursor(0, 1);
+    g_screen.lcd().print("for calibration");
+    while (!button_any_tap_once()) refresh_buttons(); // Wait for any button to be pressed
+
+    g_screen.lcd().clear();
+    g_screen.lcd().setCursor(0, 0);
     g_screen.lcd().print("Initializing MPU");
     g_screen.lcd().setCursor(0, 1);
     g_screen.lcd().print("Calibrating...");
 
+    Serial.println("Beginning MPU setup...");
     auto mpu_status = setup_mpu(I2C_CLOCK_RATE);
     if (mpu_status != 0) {
         g_screen.lcd().clear();
@@ -231,6 +266,7 @@ void setup()
         g_screen.lcd().print("MPU - [STOPPING]");
         while (true) { /* loop forever */ }
     }
+    Serial.println("Setup successful.");
 }
 
 /**
@@ -252,10 +288,16 @@ void subsonic_loop()
     refresh_buttons();
 
     if (button_closed_once(ButtonSet)) {
+#ifdef SUBSONIC_DEBUG_SERIAL_BUTTONS
+        Serial.println("Setting new destination.");
+#endif
         g_nav.overwrite_destination(g_nav.current_pos());
     }
 
     if (button_closed_once(ButtonCycle)) {
+#ifdef SUBSONIC_DEBUG_SERIAL_BUTTONS
+        Serial.println("Cycling destinations.");
+#endif
         g_nav.cycle_destination();
     }
 
@@ -263,7 +305,7 @@ void subsonic_loop()
     // Check if sufficient time has passed since the last display update.
     if (time - g_last_display_update >= REFRESH_PERIOD_MILLI) {
         g_last_display_update = time;
-#ifdef SUBSONIC_DEBUG_SERIAL
+#ifdef SUBSONIC_DEBUG_SERIAL_POSITION
         Serial.print("Now at (");
         Serial.print(g_nav.current_pos().m_x);
         Serial.print(',');
@@ -279,16 +321,16 @@ void subsonic_loop()
         // a target.
         if (direction_dist > g_max_distance) {
             g_max_distance = direction_dist;
-#ifdef SUBSONIC_DEBUG_SERIAL
+#ifdef SUBSONIC_DEBUG_SERIAL_MAX_DIST
             Serial.print("Setting new max distance to ");
             Serial.println(direction_dist);
 #endif
         }
 
-#ifdef SUBSONIC_DEBUG_SERIAL
-//        Serial.print("Illuminating ");
-//        Serial.print(direction_dist / g_max_distance);
-//        Serial.println(" percent of LEDs");
+#ifdef SUBSONIC_DEBUG_SERIAL_LEDS
+        Serial.print("Illuminating ");
+        Serial.print(direction_dist / g_max_distance);
+        Serial.println(" percent of LEDs");
 #endif
         // Illuminate a number of LEDs proportional to the device's distance
         // from the target destination.
