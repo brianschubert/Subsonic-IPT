@@ -434,7 +434,7 @@ double pitch_to_vel(Angle pitch)
             return pair[1];
         }
     }
-    size_t last_pos = (sizeof(PITCH_VEL_MAPPING) / sizeof(PITCH_VEL_MAPPING[0])) - 1;
+    constexpr size_t last_pos = (sizeof(PITCH_VEL_MAPPING) / sizeof(PITCH_VEL_MAPPING[0])) - 1;
     return PITCH_VEL_MAPPING[last_pos][1];
 }
 
