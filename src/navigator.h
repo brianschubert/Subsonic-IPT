@@ -53,7 +53,7 @@ class Navigator {
     /**
      * Returns the current position of this navigator.
      */
-    Point current_pos() const
+    Point current_pos() const noexcept
     {
         return m_current_pos;
     }
@@ -64,19 +64,19 @@ class Navigator {
      *
      * Declared as inline since the implementation is trivial
      */
-    size_t current_destination_index() const
+    size_t current_destination_index() const noexcept
     {
         return m_current_dest;
     }
 
     [[nodiscard]]
-    Point current_destination() const
+    Point current_destination() const noexcept
     {
         return m_destinations[m_current_dest];
     }
 
     [[nodiscard]]
-    Angle current_facing() const
+    Angle current_facing() const noexcept
     {
         return m_facing;
     }
@@ -86,7 +86,7 @@ class Navigator {
      *
      * Declared as inline since the implementation is trivial
      */
-    void apply_displacement(Point displacement)
+    void apply_displacement(Point displacement) noexcept
     {
         m_current_pos = m_current_pos + displacement;
     }
@@ -106,7 +106,7 @@ class Navigator {
      *
      * Declared as inline since the implementation is trivial
      */
-    void cycle_destination()
+    void cycle_destination() noexcept
     {
         m_current_dest = (m_current_dest + 1) % DESTINATION_COUNT;
     }
@@ -117,12 +117,13 @@ class Navigator {
      *
      * Declared as inline since the implementation is trivial
      */
-    void overwrite_destination(Point new_dest)
+    void overwrite_destination(Point new_dest) noexcept
     {
         m_destinations[m_current_dest] = new_dest;
     }
 
-    void set_facing(Angle facing) {
+    void set_facing(Angle facing) noexcept
+    {
         m_facing = facing;
     }
 };

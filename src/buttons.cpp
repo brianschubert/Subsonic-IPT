@@ -33,7 +33,7 @@ struct {
 /**
  * Returns the one-bit mask associated with the given button pin.
  */
-Button pin_to_flag(ButtonPin pin)
+Button pin_to_flag(ButtonPin pin) noexcept
 {
     switch (pin) {
         case ButtonPin::Set: {
@@ -52,7 +52,7 @@ Button pin_to_flag(ButtonPin pin)
  * Returns `true`  if all of the bits set in the given mask are 1s in
  * the specified target.
  */
-inline bool button_mask_matches(Button target, Button mask)
+inline bool button_mask_matches(Button target, Button mask) noexcept
 {
     return (target & mask) == mask;
 }
@@ -77,27 +77,27 @@ void refresh_buttons()
     }
 }
 
-bool button_closed(Button button_flag)
+bool button_closed(Button button_flag) noexcept
 {
     return button_mask_matches(button_status.current_buttons, button_flag);
 }
 
-bool button_open(Button button_flag)
+bool button_open(Button button_flag) noexcept
 {
     return button_mask_matches(static_cast<Button>(~button_status.current_buttons), button_flag);
 }
 
-bool button_closed_once(Button button_flag)
+bool button_closed_once(Button button_flag) noexcept
 {
     return button_closed(button_flag) && !button_mask_matches(button_status.previous_buttons, button_flag);
 }
 
-bool button_open_once(Button button_flag)
+bool button_open_once(Button button_flag) noexcept
 {
     return button_open(button_flag) && button_mask_matches(button_status.previous_buttons, button_flag);
 }
 
-bool button_any_tap_once()
+bool button_any_tap_once() noexcept
 {
     return (~button_status.previous_buttons & button_status.current_buttons);
 }

@@ -64,7 +64,7 @@ volatile bool g_mpu_interrupt = false;
 /**
  * Arduino interupt handler to allow signal the presence of a DMP interupt.
  */
-void dmp_data_ready()
+void dmp_data_ready() noexcept
 {
     g_mpu_interrupt = true;
 }

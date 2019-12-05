@@ -60,7 +60,7 @@ class LEDArray {
      * Set whether or not to use PWN when illuminating a percentage
      * using this array's LEDs.
      */
-    void set_pwm(bool value)
+    void set_pwm(bool value) noexcept
     {
         m_use_pwm = value;
     };

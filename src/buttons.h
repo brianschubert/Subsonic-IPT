@@ -33,34 +33,33 @@ void refresh_buttons();
 /**
  * Returns `true` if all of the given buttons are closed (i.e. pressed).
  */
-bool button_closed(Button button_flag);
+bool button_closed(Button button_flag) noexcept;
 
 [[nodiscard]]
 /**
  * Returns `true` is all of the given buttons are open (i.e. not pressed).
  */
-bool button_open(Button button_flag);
+bool button_open(Button button_flag) noexcept;
 
 [[nodiscard]]
 /**
  * Returns `true` if all of the given buttons are closed (i.e. pressed)
  * and the buttons were not all closed during the previous refresh.
  */
-bool button_closed_once(Button button_flag);
+bool button_closed_once(Button button_flag) noexcept;
 
 [[nodiscard]]
 /**
  * Returns `true` if all of the given buttons are open (i.e. not pressed)
  * and the buttons were not all open during the previous refresh.
  */
-bool button_open_once(Button button_flag);
-
+bool button_open_once(Button button_flag) noexcept;
 
 [[nodiscard]]
 /**
  * Returns true if any button was closed since the last refresh.
  */
-bool button_any_tap_once();
+bool button_any_tap_once() noexcept;
 
 }
 

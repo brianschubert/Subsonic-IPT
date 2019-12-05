@@ -56,7 +56,7 @@ class DirectionScreen {
         m_title_line{title},
         m_handlers{arrival_handler, forward_handler, left_handler, right_handler, backward_handler} {}
 
-    LiquidCrystal& lcd()
+    LiquidCrystal& lcd() noexcept
     {
         return m_lcd;
     }

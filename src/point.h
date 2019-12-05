@@ -23,7 +23,7 @@ struct Angle {
 
     [[nodiscard]]
     /// Returns this angle expressed in degrees.
-    double deg() const
+    double deg() const noexcept
     {
         return m_rad * 180.0 / M_PI;
     }
@@ -161,22 +161,22 @@ struct Point {
         return {cos(angle.m_rad), sin(angle.m_rad)};
     }
 
-    friend Point operator+(Point first, Point second)
+    friend Point operator+(Point first, Point second) noexcept
     {
         return {first.m_x + second.m_x, first.m_y + second.m_y};
     }
 
-    friend Point operator-(Point first, Point second)
+    friend Point operator-(Point first, Point second) noexcept
     {
         return first + -second;
     }
 
-    friend Point operator*(double scalar, Point point)
+    friend Point operator*(double scalar, Point point) noexcept
     {
         return {scalar * point.m_x, scalar * point.m_y};
     }
 
-    Point operator-() const
+    Point operator-() const noexcept
     {
         return {-m_x, -m_y};
     }
