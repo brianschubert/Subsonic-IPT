@@ -1,7 +1,7 @@
 Subsonic IPT
 ============
 
-An Arduino Sketch for inertial position tracking using an ADXL345 accelerometer.
+An Arduino Sketch for inertial position tracking using an MPU6060 accelerometer and gyroscope.
 
 This repository was developed by the "Subsonic" team as part of an assignment for the GE 1501 course at Northeastern University during Fall 2019.
 
