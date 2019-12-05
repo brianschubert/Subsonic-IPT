@@ -25,13 +25,13 @@ class DirectionScreen {
     /// Copy of a SparkFun LCD api wrapper.
     LiquidCrystal m_lcd;
 
-    Angle m_snap_tolerance;
+    const Angle m_snap_tolerance;
 
-    double m_arrival_tolerance;
+    const double m_arrival_tolerance;
 
-    void (*m_title_line)(LiquidCrystal&);
+    void (*const m_title_line)(LiquidCrystal&);
 
-    struct {
+    const struct {
         DirectionHandler arrived;
         DirectionHandler forward;
         DirectionHandler left;
