@@ -173,14 +173,6 @@ unsigned long g_last_display_update{0};
 unsigned long g_last_position_update_u{0};
 
 /**
- * Whether a button is currently being pressed.
- *
- * Used to prevent multiple loop cycles from acting on the same button
- * depression.
- */
-bool g_button_pressed{false};
-
-/**
  * Callback function that is run repeatedly while the MPU is waiting
  * for new data.
  */
