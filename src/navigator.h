@@ -18,14 +18,14 @@
 
 namespace subsonic_ipt {
 
-/// The number of destinations that a Navigator should store.
-constexpr size_t DESTINATION_COUNT{4};
-
 /**
  * A Navigator that provides directions to one of several target destinations
  * by maintaining a current position and direction facing.
  */
 class Navigator {
+
+    /// The number of destinations that a Navigator should store.
+    static inline constexpr size_t DESTINATION_COUNT{4};
 
     /// The current position of this navigator.
     Point m_current_pos{};
