@@ -48,7 +48,7 @@ class LEDArray {
      * E.g., setting this constant to 3 will result in "dim", "medium" and "full"
      * brightness settings being used.
      */
-    constexpr static size_t PWN_DEG_FRD{3};
+    static inline constexpr size_t PWN_DEG_FRD{3};
 
   public:
     explicit LEDArray(const Pin* pins)
@@ -81,7 +81,7 @@ class LEDArray {
      */
     constexpr byte pwm_step() const
     {
-        return  UINT8_MAX / PWN_DEG_FRD;
+        return UINT8_MAX / PWN_DEG_FRD;
     }
 
     /**
