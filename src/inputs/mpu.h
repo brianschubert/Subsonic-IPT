@@ -24,17 +24,17 @@ namespace subsonic_ipt {
  * packet.
  */
 struct DeviceMotion {
-    VectorInt16 world_accel;
-    VectorInt16 real_accel;
-    VectorInt16 raw_accel;
-    VectorFloat gravity;
+    VectorInt16 world_accel{};
+    VectorInt16 real_accel{};
+    VectorInt16 raw_accel{};
+    VectorFloat gravity{};
     union {
         struct {
-            float yaw;
-            float pitch;
-            float roll;
+            float yaw{};
+            float pitch{};
+            float roll{};
         };
-        float ypr[3]{};
+        float ypr[3];
     };
 };
 
