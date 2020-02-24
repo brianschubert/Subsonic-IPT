@@ -11,14 +11,12 @@
 
 #include "menu.h"
 #include "SerLCD.h"
-#include "../state.h"
-#include "ipt_menu.h"
 
 namespace subsonic_ipt {
-class MenuManager : public IPTMenu {
+class MenuManager : public Menu {
     constexpr static inline size_t MAX_MENUS = 8;
 
-    constexpr static inline size_t MAX_MENU_NAME_LEN = 5;
+//    constexpr static inline size_t MAX_MENU_NAME_LEN = 5;
 
     Menu* m_menus[MAX_MENUS];
 
@@ -27,9 +25,8 @@ class MenuManager : public IPTMenu {
     size_t m_current_menu{0};
 
   public:
-    MenuManager(IPTState* device_state, Menu** menus, size_t menu_count)
-        : IPTMenu(device_state),
-          m_menus{nullptr},
+    MenuManager(Menu* const menus[], size_t menu_count)
+        : m_menus{nullptr},
           m_menu_count(menu_count)
     {
         assert(menu_count > 0 && menu_count <= MAX_MENUS);
