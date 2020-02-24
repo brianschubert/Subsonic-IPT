@@ -36,11 +36,20 @@ struct {
 Button pin_to_flag(ButtonPin pin) noexcept
 {
     switch (pin) {
-        case ButtonPin::Set: {
-            return Button::ButtonSet;
+        case ButtonPin::Left: {
+            return Button::ButtonLeft;
         }
-        case ButtonPin::Cycle: {
-            return Button::ButtonCycle;
+        case ButtonPin::Right: {
+            return Button::ButtonRight;
+        }
+        case ButtonPin::Up: {
+            return Button::ButtonUp;
+        }
+        case ButtonPin::Down: {
+            return Button::ButtonDown;
+        }
+        case ButtonPin::Enter: {
+            return Button::ButtonEnter;
         }
         default: {
             return Button::ButtonNone;

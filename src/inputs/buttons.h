@@ -17,8 +17,11 @@
 namespace subsonic_ipt {
 enum Button : uint8_t {
     ButtonNone = 0,
-    ButtonSet = 1 << 0,
-    ButtonCycle = 1 << 1,
+    ButtonLeft = 1u << 0u,
+    ButtonRight = 1u << 1u,
+    ButtonUp = 1u << 2u,
+    ButtonDown = 1u << 3u,
+    ButtonEnter = 1u << 4u,
 };
 
 /**
