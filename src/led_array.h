@@ -51,7 +51,7 @@ class LEDArray {
     static inline constexpr size_t PWN_DEG_FRD{3};
 
   public:
-    explicit LEDArray(const Pin* pins)
+    explicit LEDArray(const Pin* pins) noexcept
     {
         memcpy(m_pins, pins, sizeof(m_pins));
     }
