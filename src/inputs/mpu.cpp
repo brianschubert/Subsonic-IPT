@@ -18,9 +18,9 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 
-#include "vendor/i2cdevlib/I2Cdev.h"
-#include "vendor/i2cdevlib/MPU6050_6Axis_MotionApps20.h"
-#include "vendor/i2cdevlib/helper_3dmath.h"
+#include "../vendor/i2cdevlib/I2Cdev.h"
+#include "../vendor/i2cdevlib/MPU6050_6Axis_MotionApps20.h"
+#include "../vendor/i2cdevlib/helper_3dmath.h"
 
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
 // is used in I2Cdev.h
@@ -30,7 +30,7 @@
 #endif
 
 #include "mpu.h"
-#include "pin.h"
+#include "../pin.h"
 
 constexpr uint8_t CALIBRATION_LOOPS{20};
 

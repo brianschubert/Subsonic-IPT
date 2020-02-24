@@ -10,7 +10,7 @@
 
 #include <Arduino.h>
 
-#include "pin.h"
+#include "../pin.h"
 
 #include "buttons.h"
 

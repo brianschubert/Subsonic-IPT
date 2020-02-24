@@ -13,8 +13,8 @@
 
 #include <stdint.h>
 
-#include "vendor/i2cdevlib/helper_3dmath.h"
-#include "vendor/i2cdevlib/MPU6050.h"
+#include "../vendor/i2cdevlib/helper_3dmath.h"
+#include "../vendor/i2cdevlib/MPU6050.h"
 
 namespace subsonic_ipt {
 
