@@ -15,19 +15,14 @@
 
 #define I2CDEV_IMPLEMENTATION I2CDEV_ARDUINO_WIRE
 
+#define UBRRH // For code completion with HardwareSerial
 #include <Arduino.h>
-#include <LiquidCrystal.h>
 
 #include "../vendor/i2cdevlib/I2Cdev.h"
 #include "../vendor/i2cdevlib/MPU6050_6Axis_MotionApps20.h"
 #include "../vendor/i2cdevlib/helper_3dmath.h"
 
-// Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
-// is used in I2Cdev.h
-#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
 #include "Wire.h"
-
-#endif
 
 #include "mpu.h"
 #include "../pin.h"
@@ -73,20 +68,18 @@ void dmp_data_ready() noexcept
  * Read the world-frame acceleration and yaw-pitch-roll orientation of the
  * device from the given MPU fifo buffer.
  */
-void compute_device_motion(subsonic_ipt::DeviceMotion& device_motion, const uint8_t* fifo_buffer) {
+void compute_device_motion(subsonic_ipt::DeviceMotion& device_motion, const uint8_t* fifo_buffer)
+{
     // Orientation and motion data from the packet in the fifo buffer.
     Quaternion device_quaternion;
-    VectorInt16 raw_accel;
-    VectorInt16 real_accel;
-    VectorFloat gravity;
 
     // Populate the device_motion structure from the fifo buffer packet
     g_mpu.dmpGetQuaternion(&device_quaternion, fifo_buffer);
-    g_mpu.dmpGetAccel(&raw_accel, fifo_buffer);
-    g_mpu.dmpGetGravity(&gravity, &device_quaternion);
-    g_mpu.dmpGetLinearAccel(&real_accel, &raw_accel, &gravity);
-    g_mpu.dmpGetLinearAccelInWorld(&device_motion.accel, &real_accel, &device_quaternion);
-    g_mpu.dmpGetYawPitchRoll(device_motion.ypr, &device_quaternion, &gravity);
+    g_mpu.dmpGetAccel(&device_motion.raw_accel, fifo_buffer);
+    g_mpu.dmpGetGravity(&device_motion.gravity, &device_quaternion);
+    g_mpu.dmpGetLinearAccel(&device_motion.real_accel, &device_motion.raw_accel, &device_motion.gravity);
+    g_mpu.dmpGetLinearAccelInWorld(&device_motion.world_accel, &device_motion.real_accel, &device_quaternion);
+    g_mpu.dmpGetYawPitchRoll(device_motion.ypr, &device_quaternion, &device_motion.gravity);
 }
 
 } // namespace
@@ -96,36 +89,20 @@ void compute_device_motion(subsonic_ipt::DeviceMotion& device_motion, const uint
 \******************************************************************************/
 namespace subsonic_ipt {
 
-uint8_t setup_mpu(uint32_t clock_rate)
+uint8_t setup_mpu()
 {
-    // join I2C bus (I2Cdev library doesn't do this automatically)
-#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-    Wire.begin();
-    Wire.setClock(clock_rate); // 400kHz I2C clock. Comment this line if having compilation difficulties
-#elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
-    Fastwire::setup(clock_rate / 1000, true);
-#endif
-
     // Initialize device
-    Serial.println(F("Initializing I2C devices..."));
+    Serial.println("Initializing I2C devices...");
 
     g_mpu.initialize();
     pinMode(INTERRUPT_PIN, INPUT);
 
     // Verify connection
-    Serial.println(F("Testing device connections..."));
-    Serial.println(g_mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
+    Serial.println("Testing device connections...");
+    Serial.println(g_mpu.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
 
-#ifdef SUBSONIC_MPU_INIT_WAIT
-    // Wait for ready
-    Serial.println(F("\nSend any character to begin DMP programming and demo: "));
-    while (Serial.available() && Serial.read()) {} // empty buffer
-    while (!Serial.available()) {}                 // wait for data
-    while (Serial.available() && Serial.read()) {} // empty buffer again
-#endif
-
-    // load and configure the DMP
-    Serial.println(F("Initializing DMP..."));
+    // Load and configure the DMP
+    Serial.println("Initializing DMP...");
     g_mpu_control.dev_status = g_mpu.dmpInitialize();
 
     // make sure it worked (returns 0 if so)
@@ -136,18 +113,18 @@ uint8_t setup_mpu(uint32_t clock_rate)
         g_mpu.PrintActiveOffsets();
 
         // turn on the DMP, now that it's ready
-        Serial.println(F("Enabling DMP..."));
+        Serial.println("Enabling DMP...");
         g_mpu.setDMPEnabled(true);
 
         // enable Arduino interrupt detection
-        Serial.print(F("Enabling interrupt detection (Arduino external interrupt "));
+        Serial.print("Enabling interrupt detection (Arduino external interrupt ");
         Serial.print(digitalPinToInterrupt(INTERRUPT_PIN));
-        Serial.println(F(")..."));
+        Serial.println(")...");
         attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), dmp_data_ready, RISING);
         g_mpu_control.mpu_int_status = g_mpu.getIntStatus();
 
         // set our DMP Ready flag so the main loop() function knows it's okay to use it
-        Serial.println(F("DMP ready! Waiting for first interrupt..."));
+        Serial.println("DMP ready! Waiting for first interrupt...");
         g_mpu_control.dmp_ready = true;
 
         // get expected DMP packet size for later comparison
@@ -157,9 +134,9 @@ uint8_t setup_mpu(uint32_t clock_rate)
         // 1 = initial memory load failed
         // 2 = DMP configuration updates failed
         // (if it's going to break, usually the code will be 1)
-        Serial.print(F("DMP Initialization failed (code "));
+        Serial.print("DMP Initialization failed (code ");
         Serial.print(g_mpu_control.dev_status);
-        Serial.println(F(")"));
+        Serial.println(")");
     }
 
     return g_mpu_control.dev_status;
@@ -167,7 +144,7 @@ uint8_t setup_mpu(uint32_t clock_rate)
 
 void run_mpu_loop(
     void waiting_callback(),
-    void update_position(const DeviceMotion& world_accel)
+    void update_state(const DeviceMotion&)
 )
 {
     // If programming failed, don't try to do anything
@@ -193,7 +170,8 @@ void run_mpu_loop(
         // This is blocking so don't do it   while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
     }
         // check for overflow (this should never happen unless our code is too inefficient)
-    else if ((g_mpu_control.mpu_int_status & _BV(MPU6050_INTERRUPT_FIFO_OFLOW_BIT)) || g_mpu_control.fifo_count >= 1024) {
+    else if ((g_mpu_control.mpu_int_status & _BV(MPU6050_INTERRUPT_FIFO_OFLOW_BIT))
+        || g_mpu_control.fifo_count >= 1024) {
         // reset so we can continue cleanly
         g_mpu.resetFIFO();
         //  fifoCount = mpu.getFIFOCount();  // will be zero after reset no need to ask
@@ -211,11 +189,11 @@ void run_mpu_loop(
             g_mpu_control.fifo_count -= g_mpu_control.packet_size;
         }
 
-        // Send the acceleration and orientation data to the `update_position`
+        // Send the acceleration and orientation data to the `update_state`
         // callback.
         DeviceMotion device_motion;
         compute_device_motion(device_motion, g_mpu_control.fifo_buffer);
-        update_position(device_motion);
+        update_state(device_motion);
     }
 }
 

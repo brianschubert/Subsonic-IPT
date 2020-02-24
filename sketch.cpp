@@ -109,7 +109,8 @@ SerLCD g_lcd{};
 IPTState g_device_state{
     .position = {0},
     .facing = {0},
-    .localized_unit = LengthUnit::Meters
+    .localized_unit = LengthUnit::Meters,
+    .device_motion = {},
 };
 
 GuidanceMenu g_guidance_menu(
@@ -340,6 +341,8 @@ void subsonic_loop()
 
 void update_position(const DeviceMotion& device_motion)
 {
+    // Copy new motion measurements into device state storage.
+    g_device_state.device_motion = device_motion;
     auto current_time = micros();
     auto time_delta = static_cast<double>(current_time - g_last_position_update_u);
     time_delta /= 1e6;             // convert microseconds to seconds
@@ -353,7 +356,7 @@ void update_position(const DeviceMotion& device_motion)
     const auto displacement = time_delta * pitch_to_vel(Angle{device_motion.pitch}) * Point::unit_from_angle(yaw_angle);
     g_device_state.position = g_device_state.position + displacement;
 
-    // Recompute current time to account for time long to arithmetic
+    // Recompute current time to account for time lost to arithmetic
     g_last_position_update_u = micros();
 
 }

@@ -8,16 +8,19 @@
 #include <stddef.h>
 #include "point.h"
 #include "units.h"
+#include "inputs/mpu.h"
 
 namespace subsonic_ipt {
 
 struct IPTState {
     /// The current position of the device
-    Point position;
+    Point position{};
     /// The direction the device is currently facing.
-    Angle facing;
+    Angle facing{};
     /// The user-selected unit to report distances in.
-    LengthUnit localized_unit;
+    LengthUnit localized_unit{LengthUnit::Meters};
+    /// The most recently measured motion data for the device.
+    DeviceMotion device_motion{};
 };
 
 } // namespace subsonic_ipt
