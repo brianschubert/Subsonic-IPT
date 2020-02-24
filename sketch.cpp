@@ -106,12 +106,7 @@ Navigator g_nav{};
 
 SerLCD g_lcd{};
 
-IPTState g_device_state{
-    .position = {0},
-    .facing = {0},
-    .localized_unit = LengthUnit::Meters,
-    .device_motion = {},
-};
+IPTState g_device_state{};
 
 GuidanceMenu g_guidance_menu(
     &g_device_state,
@@ -136,28 +131,6 @@ Menu* const g_menus[]{
 };
 
 MenuManager g_menu_manager{g_menus, sizeof(g_menus) / sizeof(Menu*)};
-
-/**
- * Wrapper around the SparkFun LCD api for displaying guidance directions.
- */
-//DirectionScreen g_screen(
-//    LiquidCrystal(
-//        LCD_PINS.rs,
-//        LCD_PINS.enable,
-//        LCD_PINS.data[0],
-//        LCD_PINS.data[1],
-//        LCD_PINS.data[2],
-//        LCD_PINS.data[3]
-//    ),
-//    Angle::from_degrees(10.0),
-//    ARRIVAL_THRESHOLD,
-//    print_screen_title,
-//    print_direction_arrived,
-//    print_direction_forward,
-//    print_direction_left,
-//    print_direction_right,
-//    print_direction_backward
-//);
 
 /**
  * The maximum distance that this device has been from a target destination.
@@ -289,11 +262,11 @@ void subsonic_loop()
     refresh_buttons();
 
     const Menu::Input input{
-        .up = button_closed_once(ButtonUp),
-        .down = button_closed_once(ButtonDown),
-        .left = button_closed_once(ButtonLeft),
-        .right = button_closed_once(ButtonRight),
-        .enter = button_closed_once(ButtonEnter),
+        button_closed_once(ButtonLeft),
+        button_closed_once(ButtonRight),
+        button_closed_once(ButtonUp),
+        button_closed_once(ButtonDown),
+        button_closed_once(ButtonEnter),
     };
 
     g_menu_manager.interact(input);
