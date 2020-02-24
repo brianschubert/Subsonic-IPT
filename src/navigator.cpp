@@ -12,14 +12,14 @@
 
 namespace subsonic_ipt {
 
-Point Navigator::compute_direction() const
+Point Navigator::compute_direction(const Point pos, const Angle facing) const
 {
     // Compute the difference vector between the current position and
     // the destination.
-    Point displacement = current_destination() - m_current_pos;
+    Point displacement = current_destination() - pos;
     // Compute the true direction that the device must travel relative
     // to the direction it is currently facing.
-    Angle direction = displacement.angle() - m_facing;
+    Angle direction = displacement.angle() - facing;
 
     // Compute the true displacement vector that the device must travel
     // along relative to the direction it is currently facing.
