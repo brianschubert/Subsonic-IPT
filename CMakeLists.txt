@@ -26,7 +26,7 @@ include_directories(
         ${ARDUINO_INSTALL_ROOT}/hardware/arduino/avr/libraries/SPI/src
 
         # Project-specified added libraries
-        ${ARDUINO_INSTALL_LIBRARIES}/LiquidCrystal/src
+        ${ARDUINO_USER_LIBRARIES}/SparkFun_SerLCD_Arduino_Library/src
 )
 
 file(GLOB ARDUINO_SOURCES ../src/*)
