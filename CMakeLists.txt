@@ -19,6 +19,11 @@ include_directories(
         # Redundant libraries for Clion code completion
         ${ARDUINO_INSTALL_ROOT}/hardware/arduino/avr/cores/arduino
         ${ARDUINO_INSTALL_ROOT}/hardware/arduino/avr/variants/standard
+        ${ARDUINO_INSTALL_ROOT}/hardware/tools/avr/avr/include/
+        ${ARDUINO_INSTALL_ROOT}/hardware/arduino/avr/libraries/Wire/src
+        ${ARDUINO_INSTALL_ROOT}/hardware/arduino/avr/cores/
+        ${ARDUINO_INSTALL_ROOT}/hardware/tools/avr/avr/include/avr
+        ${ARDUINO_INSTALL_ROOT}/hardware/arduino/avr/libraries/SPI/src
 
         # Project-specified added libraries
         ${ARDUINO_INSTALL_LIBRARIES}/LiquidCrystal/src
