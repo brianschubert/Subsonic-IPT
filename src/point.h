@@ -51,7 +51,7 @@ struct Angle {
     /**
      * Returns the conjugate of this angle.
      */
-    Angle conjugate() {
+    Angle conjugate() const {
         auto conj = Angle{-m_rad};
         conj.normalize();
         return conj;
