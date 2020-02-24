@@ -309,6 +309,7 @@ void subsonic_loop()
 //        Serial.print(g_nav.current_pos().m_y);
 //        Serial.println(")");
 #endif
+        g_lcd.clear();
         g_menu_manager.refresh_display(g_lcd);
 
         // Compute the guidance direction that should be displayed to the user.
