@@ -29,7 +29,7 @@ include_directories(
         ${ARDUINO_USER_LIBRARIES}/SparkFun_SerLCD_Arduino_Library/src
 )
 
-file(GLOB ARDUINO_SOURCES ../src/*)
+file(GLOB ARDUINO_SOURCES src/*)
 # use this target for a quick compile-only check of your CPP files
 # add more source (CPP) files here when you add them to the sketch
 add_executable(arduino-clion-minimal sketch.cpp ${ARDUINO_SOURCES})
