@@ -25,24 +25,27 @@ inline constexpr Pin LED_PINS[] = {3, 5, 6};
 
 inline constexpr Pin INTERRUPT_PIN = 2;
 
-inline constexpr struct {
-    Pin rs = 13;
-    Pin enable = 12;
-    Pin data[4] = {11, 10, 9, 8};
-} LCD_PINS;
-
 /**
  * The possible inputs that this sketch can receive from button activations.
  */
 enum class ButtonPin : Pin {
-    Set = 4,
-    Cycle = 7,
+    Left = 4,
+    Right = 5,
+    Up = 6,
+    Down = 7,
+    Enter = 8,
 };
 
 /**
  * The Arduino pins associated with buttons.
  */
-inline constexpr Pin BUTTON_PINS[] = {static_cast<Pin>(ButtonPin::Set), static_cast<Pin>(ButtonPin::Cycle)};
+inline constexpr Pin BUTTON_PINS[] = {
+    static_cast<Pin>(ButtonPin::Left),
+    static_cast<Pin>(ButtonPin::Right),
+    static_cast<Pin>(ButtonPin::Up),
+    static_cast<Pin>(ButtonPin::Down),
+    static_cast<Pin>(ButtonPin::Enter),
+};
 
 } // namespace subsonic_ipt
 
