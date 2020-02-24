@@ -39,14 +39,10 @@ class GuidanceMenu : public IPTMenu {
   private:
     void print_screen_title(SerLCD& lcd)
     {
-        lcd.write("To #");
+        lcd.print("Navigating to");
+        lcd.setCursor(17, 0);
+        lcd.print('#');
         lcd.write(m_navigator->current_destination_index());
-        lcd.write("(");
-        const auto destination = m_navigator->current_destination();
-        lcd.write(static_cast<int>(destination.m_x));
-        lcd.write(",");
-        lcd.write(static_cast<int>(destination.m_y));
-        lcd.write(")");
     }
 
 };
