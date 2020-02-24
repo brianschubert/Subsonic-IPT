@@ -64,7 +64,7 @@ void MenuManager::refresh_display(SerLCD& lcd)
     }
 
     // Allow the submenu to produce the output for the remaining rows.
-    lcd.setCursor(1, 0);
+    lcd.setCursor(0, 1);
     m_menus[m_current_menu]->refresh_display(lcd);
 }
 
