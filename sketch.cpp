@@ -130,7 +130,7 @@ Menu* const g_menus[]{
     &g_unit_menu,
 };
 
-MenuManager g_menu_manager{g_menus, sizeof(g_menus) / sizeof(Menu*)};
+MenuManager<sizeof(g_menus) / sizeof(Menu*)> g_menu_manager{g_menus, sizeof(g_menus) / sizeof(Menu*)};
 
 /**
  * The maximum distance that this device has been from a target destination.
