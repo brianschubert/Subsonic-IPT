@@ -5,12 +5,12 @@
 #ifndef SUBSONIC_IPT_GUIDANCE_MENU_H
 #define SUBSONIC_IPT_GUIDANCE_MENU_H
 
-#include "../../stdfix.h"
+#include "SerLCD.h"
+
+#include "../menu.h"
+#include "../ipt_menu.h"
 #include "../../state.h"
 #include "../../navigator.h"
-#include "../menu.h"
-#include "SerLCD.h"
-#include "../ipt_menu.h"
 
 namespace subsonic_ipt {
 
