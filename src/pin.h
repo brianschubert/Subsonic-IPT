@@ -29,10 +29,10 @@ inline constexpr Pin INTERRUPT_PIN = 2;
  * The possible inputs that this sketch can receive from button activations.
  */
 enum class ButtonPin : Pin {
-    Left = 4,
-    Right = 5,
-    Up = 6,
-    Down = 7,
+    Left = 7,
+    Right = 12,
+    Up = 13,
+    Down = 4,
     Enter = 8,
 };
 
