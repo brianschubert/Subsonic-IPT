@@ -10,6 +10,9 @@
 namespace subsonic_ipt {
 
 class Menu {
+  protected:
+    bool m_content_changed{true};
+
   public:
     struct Input {
         bool left;
@@ -30,6 +33,11 @@ class Menu {
     virtual bool request_priority() const {
         return false;
     };
+
+    [[nodiscard]]
+    virtual bool content_changed() const {
+        return m_content_changed;
+    }
 };
 
 } // namespace subsonic_ipt

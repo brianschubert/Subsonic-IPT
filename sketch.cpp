@@ -24,10 +24,11 @@
 #include "src/tui/menus/guidance_menu.h"
 #include "src/tui/menus/destination_menu.h"
 #include "src/tui/menus/unit_menu.h"
+#include "src/tui/menus/debug_menu.h"
 
 // When defined, a message will be printed to the Serial output whenever
 // a button press registered.
-#define SUBSONIC_DEBUG_SERIAL_BUTTONS
+//#define SUBSONIC_DEBUG_SERIAL_BUTTONS
 
 // When defined, the devices current position will be printed periodically
 // to the Serial output.
@@ -47,7 +48,7 @@ using namespace subsonic_ipt;
  * The period of time elapsed between updates for
  * the LCD and LED array.
  */
-constexpr int REFRESH_PERIOD_MILLI = 300;
+constexpr int REFRESH_PERIOD_MILLI = 800;
 
 /**
  * Whenever the device is with this distance of a target, it is considered
@@ -124,10 +125,15 @@ UnitMenu g_unit_menu(
     &g_device_state
 );
 
+DebugMenu debug_menu(
+    &g_device_state
+);
+
 Menu* const g_menus[]{
     &g_guidance_menu,
     &g_destination_menu,
     &g_unit_menu,
+    &debug_menu,
 };
 
 MenuManager<sizeof(g_menus) / sizeof(Menu*)> g_menu_manager{g_menus};
@@ -209,7 +215,8 @@ void setup()
     // Display interactive welcome sequence
     g_lcd.print("Subsonic IPT");
     g_lcd.setCursor(0, 1);
-    g_lcd.print(' ');
+    g_lcd.noCursor();
+    g_lcd.setBacklight(0x808080);
 
     for (int i = 0; i < (LCD_DIMENSIONS.x / 2) - 2; ++i) {
         g_lcd.print("* ");
@@ -275,14 +282,7 @@ void subsonic_loop()
     // Check if sufficient time has passed since the last display update.
     if (time - g_last_display_update >= REFRESH_PERIOD_MILLI) {
         g_last_display_update = time;
-#ifdef SUBSONIC_DEBUG_SERIAL_POSITION
-//        Serial.print("Now at (");
-//        Serial.print(g_nav.current_pos().m_x);
-//        Serial.print(',');
-//        Serial.print(g_nav.current_pos().m_y);
-//        Serial.println(")");
-#endif
-        g_lcd.clear();
+
         g_menu_manager.refresh_display(g_lcd);
 
         // Compute the guidance direction that should be displayed to the user.
@@ -317,6 +317,9 @@ void update_position(const DeviceMotion& device_motion)
 {
     // Copy new motion measurements into device state storage.
     g_device_state.device_motion = device_motion;
+    g_device_state.device_motion.yaw = device_motion.yaw;
+    g_device_state.device_motion.pitch = device_motion.pitch;
+    g_device_state.device_motion.roll = device_motion.roll;
     auto current_time = micros();
     auto time_delta = static_cast<double>(current_time - g_last_position_update_u);
     time_delta /= 1e6;             // convert microseconds to seconds
@@ -327,7 +330,7 @@ void update_position(const DeviceMotion& device_motion)
     auto yaw_angle = Angle{-device_motion.yaw};
     yaw_angle.normalize();
     g_device_state.facing = yaw_angle;
-    const auto displacement = time_delta * pitch_to_vel(Angle{device_motion.pitch}) * Point::unit_from_angle(yaw_angle);
+    const auto displacement = time_delta * pitch_to_vel(Angle{device_motion.roll}) * Point::unit_from_angle(yaw_angle);
     g_device_state.position = g_device_state.position + displacement;
 
     // Recompute current time to account for time lost to arithmetic

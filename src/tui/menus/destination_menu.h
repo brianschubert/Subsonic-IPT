@@ -6,7 +6,7 @@
 #define SUBSONIC_IPT_DESTINATION_MENU_H
 
 #include "../../navigator.h"
-#include "list_view_menu.h"
+#include "../list_view_menu.h"
 
 namespace subsonic_ipt {
 class DestinationMenu : public ListViewMenu {

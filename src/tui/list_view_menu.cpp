@@ -10,6 +10,8 @@ constexpr size_t DISPLAY_WIDTH = 20;
 
 void subsonic_ipt::ListViewMenu::refresh_display(SerLCD& lcd)
 {
+    m_content_changed = false;
+
     const size_t max_index = entry_count() - 1;
     const size_t entries_to_print = min(3, entry_count() + 1);
 
@@ -36,15 +38,14 @@ void subsonic_ipt::ListViewMenu::refresh_display(SerLCD& lcd)
                 entry_buffer[3] = ')';
             }
             if (style == LabelStyle::Number) {
-                entry_buffer[2] = index;
+                entry_buffer[2] = static_cast<char>(index) + 48;
             } else if (style == LabelStyle::Bullet) {
                 entry_buffer[2] = '*';
             }
         }
 
         print_entry(entry_buffer, index);
-        lcd.write(entry_buffer);
-        lcd.write("\r\n");
+        lcd.println(entry_buffer);
     }
 
 }
@@ -53,13 +54,16 @@ void subsonic_ipt::ListViewMenu::interact(const subsonic_ipt::Menu::Input& input
 {
     if (input.down) {
         m_selected_entry += 1;
+        m_content_changed = true;
     }
     if (input.up) {
         m_selected_entry -= 1;
+        m_content_changed = true;
     }
     m_selected_entry %= entry_count();
 
     if (input.enter) {
         interact_entry(m_selected_entry);
+        m_content_changed = true;
     }
 }

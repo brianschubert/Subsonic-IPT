@@ -5,7 +5,7 @@
 #ifndef SUBSONIC_IPT_UNIT_MENU_H
 #define SUBSONIC_IPT_UNIT_MENU_H
 
-#include "list_view_menu.h"
+#include "../list_view_menu.h"
 
 namespace subsonic_ipt {
 

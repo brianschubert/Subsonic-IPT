@@ -43,26 +43,37 @@ class MenuManager : public Menu {
         return "MNGR";
     }
 
-    void refresh_display(SerLCD& lcd) override;
-
     void interact(const Input& input) override;
+
+    void refresh_display(SerLCD& lcd) override
+    {
+        if (m_content_changed || m_menus[m_current_menu]->content_changed()) {
+            m_content_changed = false;
+            lcd.clear();
+            force_refresh_display(lcd);
+        }
+    }
 
   private:
     static void lcd_print_title(SerLCD& lcd, const char* title, bool current, size_t count = MAX_MENU_NAME_LEN)
     {
+        char title_buff[MAX_MENU_NAME_LEN + 1];
+        memcpy(title_buff, title, count);
         if (current) {
-            lcd.write('[');
+            lcd.print('[');
         }
-        lcd.write(reinterpret_cast<const uint8_t*>(title), count);
+        lcd.print(title_buff);
         if (current) {
-            lcd.write(']');
+            lcd.print(']');
         }
     }
+
+    void force_refresh_display(SerLCD& lcd);
 
 };
 
 template<>
-void MenuManager<1>::refresh_display(SerLCD& lcd)
+void MenuManager<1>::force_refresh_display(SerLCD& lcd)
 {
     lcd.setCursor(0, 0);
     lcd_print_title(lcd, m_menus[0]->get_menu_name(), true);
@@ -72,11 +83,11 @@ void MenuManager<1>::refresh_display(SerLCD& lcd)
 }
 
 template<>
-void MenuManager<2>::refresh_display(SerLCD& lcd)
+void MenuManager<2>::force_refresh_display(SerLCD& lcd)
 {
     lcd.setCursor(0, 0);
     lcd_print_title(lcd, m_menus[0]->get_menu_name(), m_current_menu == 0);
-    lcd.write(' ');
+    lcd.print(' ');
     lcd_print_title(lcd, m_menus[1]->get_menu_name(), m_current_menu == 1);
     // Allow the submenu to produce the output for the remaining rows.
     lcd.setCursor(0, 1);
@@ -84,13 +95,13 @@ void MenuManager<2>::refresh_display(SerLCD& lcd)
 }
 
 template<>
-void MenuManager<3>::refresh_display(SerLCD& lcd)
+void MenuManager<3>::force_refresh_display(SerLCD& lcd)
 {
     lcd.setCursor(0, 0);
     lcd_print_title(lcd, m_menus[0]->get_menu_name(), m_current_menu == 0);
-    lcd.write(' ');
+    lcd.print(' ');
     lcd_print_title(lcd, m_menus[1]->get_menu_name(), m_current_menu == 1);
-    lcd.write(' ');
+    lcd.print(' ');
     lcd_print_title(lcd, m_menus[2]->get_menu_name(), m_current_menu == 2);
     // Allow the submenu to produce the output for the remaining rows.
     lcd.setCursor(0, 1);
@@ -98,7 +109,7 @@ void MenuManager<3>::refresh_display(SerLCD& lcd)
 }
 
 template<size_t S>
-void MenuManager<S>::refresh_display(SerLCD& lcd)
+void MenuManager<S>::force_refresh_display(SerLCD& lcd)
 {
     lcd.setCursor(0, 0);
 
@@ -116,20 +127,20 @@ void MenuManager<S>::refresh_display(SerLCD& lcd)
         : (end_right ? m_current_menu - 1 : m_current_menu);
 
     if (arrow_left) {
-        lcd.write('<');
+        lcd.print('<');
     }
     lcd_print_title(lcd, m_menus[center_menu - 1]->get_menu_name(), end_left);
-    lcd.write(' ');
+    lcd.print(' ');
     lcd_print_title(
         lcd,
         m_menus[center_menu]->get_menu_name(),
         !(end_left || end_right),
         (arrow_left && arrow_right) ? 4 : 5
     );
-    lcd.write(' ');
+    lcd.print(' ');
     lcd_print_title(lcd, m_menus[center_menu + 1]->get_menu_name(), end_right);
     if (arrow_right) {
-        lcd.write('>');
+        lcd.print('>');
     }
 
     // Allow the submenu to produce the output for the remaining rows.
@@ -143,14 +154,18 @@ void MenuManager<S>::interact(const Menu::Input& input)
     // Only react to the given input if the current menu is NOT requesting
     // input priority.
     if (!m_menus[m_current_menu]->request_priority()) {
-        size_t menu_offset{0};
-        if (input.right) {
-            menu_offset += 1;
+        if (input.left || input.right) {
+            // Rotate the current menu
+            if (input.left) {
+                m_current_menu -= 1;
+            }
+            if (input.right) {
+                m_current_menu += 1;
+            }
+            m_current_menu %= S;
+            // Signal that the content has changed
+            m_content_changed = true;
         }
-        if (input.left) {
-            menu_offset -= 1;
-        }
-        m_current_menu = (m_current_menu + menu_offset) % S;
     }
     m_menus[m_current_menu]->interact(input);
 }

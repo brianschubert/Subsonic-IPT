@@ -68,7 +68,7 @@ namespace subsonic_ipt {
 
 const char* GuidanceMenu::get_menu_name() const noexcept
 {
-    return "GUIDE";
+    return "GUID";
 }
 
 void GuidanceMenu::refresh_display(SerLCD& lcd)

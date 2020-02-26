@@ -6,7 +6,7 @@
 #define SUBSONIC_IPT_LIST_VIEW_MENU_H
 
 #include "SerLCD.h"
-#include "../ipt_menu.h"
+#include "ipt_menu.h"
 
 namespace subsonic_ipt {
 

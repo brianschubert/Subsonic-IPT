@@ -40,9 +40,9 @@ class GuidanceMenu : public IPTMenu {
     void print_screen_title(SerLCD& lcd)
     {
         lcd.print("Navigating to");
-        lcd.setCursor(17, 0);
-        lcd.print('#');
-        lcd.write(m_navigator->current_destination_index());
+        lcd.setCursor(17, 1);
+        lcd.print("#");
+        lcd.print(m_navigator->current_destination_index());
     }
 
 };
