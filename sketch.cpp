@@ -48,7 +48,7 @@ using namespace subsonic_ipt;
  * The period of time elapsed between updates for
  * the LCD and LED array.
  */
-constexpr int REFRESH_PERIOD_MILLI = 800;
+constexpr int REFRESH_PERIOD_MILLI = 1000;
 
 /**
  * Whenever the device is with this distance of a target, it is considered
@@ -82,8 +82,8 @@ constexpr struct {
  */
 constexpr double PITCH_VEL_MAPPING[][2] = {
     {10, 0},
-    {45, 0.5},
-    {90, 1},
+    {45, 2.5},
+    {90, 3},
 };
 
 
@@ -136,7 +136,7 @@ Menu* const g_menus[]{
     &debug_menu,
 };
 
-MenuManager<sizeof(g_menus) / sizeof(Menu*)> g_menu_manager{g_menus};
+MenuManager<4> g_menu_manager{g_menus};
 
 /**
  * The maximum distance that this device has been from a target destination.
@@ -346,7 +346,7 @@ double pitch_to_vel(Angle pitch)
         }
     }
     constexpr size_t last_pos = (sizeof(PITCH_VEL_MAPPING) / sizeof(PITCH_VEL_MAPPING[0])) - 1;
-    return PITCH_VEL_MAPPING[last_pos][1];
+    return 1; //PITCH_VEL_MAPPING[last_pos][1];
 }
 
 } // namespace

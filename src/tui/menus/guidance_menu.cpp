@@ -17,6 +17,13 @@ namespace {
 constexpr size_t DIST_WIDTH{5};
 
 /**
+ * Whether to invert the displayed direction of left and right.
+ *
+ * Set this flag to `true` you e.g. mount the MPU upside down.
+ */
+constexpr bool INVERT_LEFT_RIGHT{true};
+
+/**
  * Formats the given localized distance measurement into a representation
  * composed of precisely `DIST_WIDTH-1` characters.
  *
@@ -113,11 +120,20 @@ void GuidanceMenu::refresh_display(SerLCD& lcd)
     } else if (direction.m_y > 0) {
         lcd.print("Turn ");
         lcd.print(static_cast<int>(direction.angle().deg()));
-        lcd.print("* Left");
+        if constexpr (INVERT_LEFT_RIGHT) {
+            lcd.print("* Right");
+        } else {
+            lcd.print("* Left");
+        }
     } else {
         lcd.print("Turn ");
         lcd.print(360 - static_cast<int>(direction.angle().deg()));
-        lcd.print("* Right");
+        if constexpr (INVERT_LEFT_RIGHT) {
+            lcd.print("* Left");
+        } else {
+            lcd.print("* Right");
+
+        }
     }
 }
 
