@@ -25,6 +25,7 @@
 #include "src/tui/menus/destination_menu.h"
 #include "src/tui/menus/unit_menu.h"
 #include "src/tui/menus/debug_menu.h"
+#include "src/tui/menus/brightness_menu.h"
 
 // When defined, a message will be printed to the Serial output whenever
 // a button press registered.
@@ -48,7 +49,7 @@ using namespace subsonic_ipt;
  * The period of time elapsed between updates for
  * the LCD and LED array.
  */
-constexpr int REFRESH_PERIOD_MILLI = 1000;
+constexpr int REFRESH_PERIOD_MILLI = 100;
 
 /**
  * Whenever the device is with this distance of a target, it is considered
@@ -129,14 +130,17 @@ DebugMenu debug_menu(
     &g_device_state
 );
 
+BrightnessMenu brightness_menu{};
+
 Menu* const g_menus[]{
     &g_guidance_menu,
     &g_destination_menu,
     &g_unit_menu,
     &debug_menu,
+    &brightness_menu,
 };
 
-MenuManager<4> g_menu_manager{g_menus};
+MenuManager<5> g_menu_manager{g_menus};
 
 /**
  * The maximum distance that this device has been from a target destination.
