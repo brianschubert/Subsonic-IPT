@@ -37,11 +37,16 @@ void DebugMenu::print_entry(char (& entry)[20], size_t index)
 
         case 2: {
             sprintf(entry + 5,
-                "%3d,%3d,%3d",
-                static_cast<int>(m_device_state->device_motion.yaw),
-                static_cast<int>(m_device_state->device_motion.pitch),
-                static_cast<int>(m_device_state->device_motion.roll)
+                "%4d,%4d",
+                static_cast<int>(m_device_state->position.m_x),
+                static_cast<int>(m_device_state->position.m_y)
                 );
+//            sprintf(entry + 5,
+//                "%3d,%3d,%3d",
+//                static_cast<int>(m_device_state->device_motion.yaw),
+//                static_cast<int>(m_device_state->device_motion.pitch),
+//                static_cast<int>(m_device_state->device_motion.roll)
+//                );
             break;
         }
 

@@ -10,6 +10,9 @@
 namespace subsonic_ipt {
 
 class DebugMenu : public ListViewMenu {
+    const unsigned long m_refresh_timeout;
+
+    unsigned long m_last_refresh{};
 
   protected:
     [[nodiscard]]
@@ -26,7 +29,10 @@ class DebugMenu : public ListViewMenu {
     void interact_entry(size_t index) override {}
 
   public:
-    explicit DebugMenu(IPTState* device_state) : ListViewMenu(device_state) {}
+    explicit DebugMenu(IPTState* device_state, unsigned long refresh_timeout)
+        : ListViewMenu(device_state),
+          m_refresh_timeout(refresh_timeout),
+          m_last_refresh(0) {}
 
     [[nodiscard]]
     const char* get_menu_name() const noexcept override;
