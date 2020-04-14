@@ -15,7 +15,6 @@
 
 #include "src/point.h"
 #include "src/navigator.h"
-#include "src/led_array.h"
 #include "src/inputs/buttons.h"
 #include "src/inputs/mpu.h"
 #include "src/pin.h"
@@ -97,11 +96,6 @@ constexpr double PITCH_VEL_MAPPING[][2] = {
 namespace {
 
 /**
- * Wrapper modeling the array of LEDs being used by this sketch.
- */
-LEDArray<sizeof(LED_PINS)> g_led_array(LED_PINS);
-
-/**
  * Global structure to track the positional data associated with the device.
  */
 Navigator g_nav{};
@@ -114,30 +108,24 @@ GuidanceMenu g_guidance_menu(
     &g_device_state,
     &g_nav,
     Angle::from_degrees(10.0),
-    ARRIVAL_THRESHOLD
+    ARRIVAL_THRESHOLD,
+    500
 );
 
-DestinationMenu g_destination_menu(
-    &g_device_state,
-    &g_nav
-);
+DestinationMenu g_destination_menu(&g_device_state, &g_nav);
 
-UnitMenu g_unit_menu(
-    &g_device_state
-);
+UnitMenu g_unit_menu(&g_device_state);
 
-DebugMenu debug_menu(
-    &g_device_state
-);
+DebugMenu g_debug_menu(&g_device_state, 500);
 
-BrightnessMenu brightness_menu{};
+BrightnessMenu g_brightness_menu{};
 
 Menu* const g_menus[]{
     &g_guidance_menu,
     &g_destination_menu,
     &g_unit_menu,
-    &debug_menu,
-    &brightness_menu,
+    &g_debug_menu,
+    &g_brightness_menu,
 };
 
 MenuManager<5> g_menu_manager{g_menus};
@@ -194,10 +182,6 @@ void setup()
     // Open a serial connection on port 9600
     Serial.begin(SERIAL_PORT);
     Serial.println("Starting setup routine...");
-
-    // Configure whether the LED array should use PWM when illuminating
-    // LEDS
-    g_led_array.set_pwm(true);
 
     Wire.begin();
     Wire.setClock(I2C_CLOCK_RATE);
@@ -311,14 +295,49 @@ void subsonic_loop()
         Serial.print(direction_dist / g_max_distance);
         Serial.println(" percent of LEDs");
 #endif
-        // Illuminate a number of LEDs proportional to the device's distance
-        // from the target destination.
-        g_led_array.activate_led_percent(1 - (direction_dist / g_max_distance));
+        // Temporary arbitrary waypoint colors.
+        switch (g_nav.current_destination_index()) {
+            case 0: {
+                analogWrite(LED_PINS[0], 30);
+                analogWrite(LED_PINS[1], 127);
+                analogWrite(LED_PINS[2], 30);
+                break;
+            }
+            case 1: {
+                analogWrite(LED_PINS[0], 255);
+                analogWrite(LED_PINS[1], 127);
+                analogWrite(LED_PINS[2], 0);
+                break;
+            }
+            case 2: {
+                analogWrite(LED_PINS[0], 0);
+                analogWrite(LED_PINS[1], 255);
+                analogWrite(LED_PINS[2], 255);
+                break;
+            }
+            case 3: {
+                analogWrite(LED_PINS[0], 80);
+                analogWrite(LED_PINS[1], 180);
+                analogWrite(LED_PINS[2], 0);
+                break;
+            }
+        }
+//        g_led_array.activate_led_percent(1 - (direction_dist / g_max_distance));
     }
 }
 
 void update_position(const DeviceMotion& device_motion)
 {
+    // Member pointer to the member of DeviceMotion that contains the "true
+    // pitch" of the device.
+    //
+    // Update this pointer if the MPU is mounted in an orientation different
+    // from the expected orientation of the device.
+    //
+    // e.g. if the MPU is rotated 90 degrees, the "true pitch" will be the
+    // roll.
+    constexpr static float DeviceMotion::*true_pitch = &DeviceMotion::roll;
+
     // Copy new motion measurements into device state storage.
     g_device_state.device_motion = device_motion;
     g_device_state.device_motion.yaw = device_motion.yaw;
@@ -334,7 +353,8 @@ void update_position(const DeviceMotion& device_motion)
     auto yaw_angle = Angle{-device_motion.yaw};
     yaw_angle.normalize();
     g_device_state.facing = yaw_angle;
-    const auto displacement = time_delta * pitch_to_vel(Angle{device_motion.roll}) * Point::unit_from_angle(yaw_angle);
+    const auto displacement =
+        time_delta * pitch_to_vel(Angle{device_motion.*true_pitch}) * Point::unit_from_angle(yaw_angle);
     g_device_state.position = g_device_state.position + displacement;
 
     // Recompute current time to account for time lost to arithmetic
