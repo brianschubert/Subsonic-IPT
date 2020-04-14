@@ -28,7 +28,7 @@ class MenuManager : public Menu {
   public:
     explicit MenuManager(Menu* const menus[])
     {
-        memcpy(m_menus, menus, sizeof(Menu) * S);
+        memcpy(m_menus, menus, sizeof(Menu*) * S);
     }
 
     [[nodiscard]]
