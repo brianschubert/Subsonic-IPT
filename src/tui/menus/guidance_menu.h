@@ -22,12 +22,24 @@ class GuidanceMenu : public IPTMenu {
 
     const double m_arrival_tolerance;
 
+    const unsigned long m_refresh_timeout;
+
+    unsigned long m_last_refresh;
+
   public:
-    explicit GuidanceMenu(IPTState* device_state, Navigator* navigator, Angle snap_tolerance, double arrival_tolerance)
+    explicit GuidanceMenu(
+        IPTState* device_state,
+        Navigator* navigator,
+        Angle snap_tolerance,
+        double arrival_tolerance,
+        unsigned long refresh_timeout
+    )
         : IPTMenu(device_state),
           m_navigator(navigator),
           m_snap_tolerance(snap_tolerance),
-          m_arrival_tolerance(arrival_tolerance) {}
+          m_arrival_tolerance(arrival_tolerance),
+          m_refresh_timeout(refresh_timeout),
+          m_last_refresh(0) {}
 
     [[nodiscard]]
     const char* get_menu_name() const noexcept override;
@@ -35,6 +47,8 @@ class GuidanceMenu : public IPTMenu {
     void refresh_display(SerLCD& lcd) override;
 
     void interact(const Input& input) override;
+
+    bool content_changed() const override;
 
   private:
     void print_screen_title(SerLCD& lcd)

@@ -21,7 +21,7 @@ constexpr size_t DIST_WIDTH{5};
  *
  * Set this flag to `true` you e.g. mount the MPU upside down.
  */
-constexpr bool INVERT_LEFT_RIGHT{true};
+constexpr bool INVERT_LEFT_RIGHT{false};
 
 /**
  * Formats the given localized distance measurement into a representation
@@ -135,6 +135,8 @@ void GuidanceMenu::refresh_display(SerLCD& lcd)
 
         }
     }
+
+    m_last_refresh = millis();
 }
 
 void GuidanceMenu::interact(const Menu::Input& input)
@@ -148,6 +150,11 @@ void GuidanceMenu::interact(const Menu::Input& input)
     if (input.enter) {
         m_navigator->overwrite_destination(m_device_state->position);
     }
+}
+
+bool GuidanceMenu::content_changed() const
+{
+    return (millis() - m_last_refresh) >= m_refresh_timeout;
 }
 
 } // namespace subsonic_ipt
