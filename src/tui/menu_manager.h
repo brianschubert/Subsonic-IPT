@@ -135,7 +135,8 @@ void MenuManager<S>::force_refresh_display(SerLCD& lcd)
         lcd,
         m_menus[center_menu]->get_menu_name(),
         !(end_left || end_right),
-        (arrow_left && arrow_right) ? 4 : 5
+//        (arrow_left && arrow_right) ? 4 : 5 // Temporarily disable variable width menu titles.
+    5
     );
     lcd.print(' ');
     lcd_print_title(lcd, m_menus[center_menu + 1]->get_menu_name(), end_right);
