@@ -25,7 +25,7 @@ constexpr size_t DIST_WIDTH{5};
 void format_distance(char (& dist_buff)[DIST_WIDTH], double localized_dist) noexcept
 {
     if (localized_dist >= 1 && localized_dist < 1000) {
-        snprintf(dist_buff, DIST_WIDTH, "%4.0f", localized_dist);
+        snprintf(dist_buff, DIST_WIDTH, "%4d", localized_dist);
     } else {
         auto order = static_cast<int>(log10(localized_dist));
         if (order > 99) {
@@ -101,14 +101,13 @@ void GuidanceMenu::refresh_display(SerLCD& lcd)
         char dist_buff[DIST_WIDTH];
         format_distance(
             dist_buff,
-            meters_to_unit(dist_meters, m_device_state->localized_unit)
+            abs(meters_to_unit(dist_meters, m_device_state->localized_unit))
         );
         const char* symbol = unit_symbol(m_device_state->localized_unit);
 
-        lcd.setCursor(20 - DIST_WIDTH - strlen(symbol), 1);
+        lcd.setCursor(20 - DIST_WIDTH - strlen(symbol), 2);
         lcd.print(dist_buff);
         lcd.print(symbol);
-        lcd.print("m");
     } else if (near_backward) {
         lcd.print("Turn around");
     } else if (direction.m_y > 0) {
