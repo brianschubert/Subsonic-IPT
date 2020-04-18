@@ -13,7 +13,7 @@ ListViewMenu::LabelStyle DebugMenu::label_style() const
 
 size_t DebugMenu::entry_count() const
 {
-    return 3;
+    return 4;
 }
 
 bool DebugMenu::entry_is_active(size_t index) const
@@ -25,12 +25,12 @@ void DebugMenu::print_entry(char (& entry)[20], size_t index)
 {
     switch (index) {
         case 0: {
-            sprintf(entry + 5, "%10lu", millis());
+            sprintf(entry + 5, "T: %10lu", millis());
             break;
         }
         case 1: {
             sprintf(entry + 5,
-                "%3d",
+                "Agl: %3d",
                 static_cast<int>(m_device_state->facing.deg()));
             break;
         }
@@ -40,14 +40,16 @@ void DebugMenu::print_entry(char (& entry)[20], size_t index)
                 "%4d,%4d",
                 static_cast<int>(m_device_state->position.m_x),
                 static_cast<int>(m_device_state->position.m_y)
-                );
-//            sprintf(entry + 5,
-//                "%3d,%3d,%3d",
-//                static_cast<int>(m_device_state->device_motion.yaw),
-//                static_cast<int>(m_device_state->device_motion.pitch),
-//                static_cast<int>(m_device_state->device_motion.roll)
-//                );
+            );
             break;
+        }
+        case 3: {
+            sprintf(entry + 5,
+                "%3d,%3d,%3d",
+                static_cast<int>(m_device_state->device_motion.yaw * 10),
+                static_cast<int>(m_device_state->device_motion.pitch),
+                static_cast<int>(m_device_state->device_motion.roll)
+            );
         }
 
     }
@@ -56,5 +58,16 @@ void DebugMenu::print_entry(char (& entry)[20], size_t index)
 const char* DebugMenu::get_menu_name() const noexcept
 {
     return "DBUG";
+}
+
+void DebugMenu::refresh_display(SerLCD& lcd)
+{
+    m_last_refresh = millis();
+    ListViewMenu::refresh_display(lcd);
+}
+
+bool DebugMenu::content_changed() const
+{
+    return (millis() - m_last_refresh) >= m_refresh_timeout || Menu::content_changed();
 }
 } // namespace subsonic_ipt

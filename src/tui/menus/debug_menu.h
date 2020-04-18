@@ -36,6 +36,10 @@ class DebugMenu : public ListViewMenu {
 
     [[nodiscard]]
     const char* get_menu_name() const noexcept override;
+
+    void refresh_display(SerLCD& lcd) override;
+
+    virtual bool content_changed() const;
 };
 
 } // namespace subsonic_ipt
