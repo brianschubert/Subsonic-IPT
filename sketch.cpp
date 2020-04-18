@@ -82,8 +82,8 @@ constexpr struct {
  */
 constexpr double PITCH_VEL_MAPPING[][2] = {
     {10, 0},
-    {45, 2.5},
-    {90, 3},
+    {45, 1.5},
+    {90, 2},
 };
 
 
@@ -316,8 +316,8 @@ void subsonic_loop()
                 break;
             }
             case 3: {
-                analogWrite(LED_PINS[0], 80);
-                analogWrite(LED_PINS[1], 180);
+                analogWrite(LED_PINS[0], 100);
+                analogWrite(LED_PINS[1], 0);
                 analogWrite(LED_PINS[2], 0);
                 break;
             }
@@ -359,7 +359,12 @@ void update_position(const DeviceMotion& device_motion)
 
     // Recompute current time to account for time lost to arithmetic
     g_last_position_update_u = micros();
-
+    Serial.print("From (");
+    Serial.print(g_device_state.position.m_x);
+    Serial.print(',');
+    Serial.print(g_device_state.position.m_y);
+    Serial.print(")@");
+    Serial.println(g_device_state.facing.deg());
 }
 
 double pitch_to_vel(Angle pitch)
