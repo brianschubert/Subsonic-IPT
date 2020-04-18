@@ -1,10 +1,19 @@
-//
-// Created by brian on 2/23/20.
-//
+/**
+ * unit.h - Definitions for handling lengths in various units of measurement.
+ *
+ * Copyright (c) 2020 Brian Schubert
+ *
+ * This file is distributed under the MIT License. If a copy of the
+ * MIT License was not distributed with this file, you can obtain one
+ * at https://opensource.org/licenses/MIT.
+ */
 
 #ifndef SUBSONIC_IPT_UNITS_H
 #define SUBSONIC_IPT_UNITS_H
 
+/**
+ * The units of length that the user may select.
+ */
 enum class LengthUnit {
     Meters,
     Feet,
@@ -14,6 +23,9 @@ enum class LengthUnit {
 //    Steps,
 };
 
+/**
+ * All supported units of length.
+ */
 constexpr inline LengthUnit ALL_UNITS[]{
     LengthUnit::Meters,
     LengthUnit::Feet,
@@ -22,6 +34,11 @@ constexpr inline LengthUnit ALL_UNITS[]{
     LengthUnit::LightYears
 };
 
+/**
+ * Converts the given distance in meters to the specified units.
+ *
+ * Marked as inline to allow for multiple definition with external linkage.
+ */
 constexpr inline double meters_to_unit(double meters, LengthUnit new_units)
 {
     switch (new_units) {
@@ -33,6 +50,11 @@ constexpr inline double meters_to_unit(double meters, LengthUnit new_units)
     }
 }
 
+/**
+ * Returns the symbol associated with the given unit of length.
+ *
+ * Marked as inline to allow for multiple definitions with external linkage.
+ */
 constexpr inline const char* unit_symbol(LengthUnit unit)
 {
     switch (unit) {
