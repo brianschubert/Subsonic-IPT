@@ -5,6 +5,8 @@ An Arduino Sketch for inertial position tracking using an MPU6060 accelerometer 
 
 This repository was developed by the "Subsonic" team as part of an assignment for the courses GE 1501 and GE 1502 at Northeastern University during Fall 2019 and Spring 2020, respectively.
 
+The codebase consists of Arduino-C++, which is a dialect of C++ that notably does not link against the C++ standard library. As such, even though this project makes use of C++17 language features, it does not benefit from the modern STL. Instead, C standard library headers are used throughout.
+
 Installation
 ------------
 

@@ -1,6 +1,12 @@
-//
-// Created by brian on 4/14/20.
-//
+/**
+ * brightness_menu.h - LCD menu to dimming and brightening the screen.
+ *
+ * Copyright (c) 2020 Brian Schubert
+ *
+ * This file is distributed under the MIT License. If a copy of the
+ * MIT License was not distributed with this file, you can obtain one
+ * at https://opensource.org/licenses/MIT.
+ */
 
 #ifndef SUBSONIC_IPT_BRIGHTNESS_MENU_H
 #define SUBSONIC_IPT_BRIGHTNESS_MENU_H
@@ -10,10 +16,18 @@
 #include "../menu.h"
 
 namespace subsonic_ipt {
+
 class BrightnessMenu : public Menu {
   private:
+    /**
+     * The index of the currently selected screen contrast.
+     */
     size_t m_screen_contrast_selection{0};
 
+    /**
+     * The screen contrast settings that the user may cycle through while
+     * using this menu.
+     */
     constexpr static inline int8_t SCREEN_CONTRAST_CHOICES[] = {
         5,
         25,
@@ -39,6 +53,9 @@ class BrightnessMenu : public Menu {
     void interact(const Input& input) override;
 
     [[nodiscard]]
+    /**
+     * The number of screen contrast settings that this menu offers.
+     */
     constexpr size_t choice_count() const
     {
         return sizeof(SCREEN_CONTRAST_CHOICES) / sizeof(int8_t);

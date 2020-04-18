@@ -1,6 +1,13 @@
-//
-// Created by brian on 2/23/20.
-//
+/**
+ * destination_menu.h - LCD menu to selecting which waypoint the users wishes
+ * to navigate to.
+ *
+ * Copyright (c) 2020 Brian Schubert
+ *
+ * This file is distributed under the MIT License. If a copy of the
+ * MIT License was not distributed with this file, you can obtain one
+ * at https://opensource.org/licenses/MIT.
+ */
 
 #ifndef SUBSONIC_IPT_DESTINATION_MENU_H
 #define SUBSONIC_IPT_DESTINATION_MENU_H

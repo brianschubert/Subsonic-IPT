@@ -1,6 +1,13 @@
-//
-// Created by brian on 2/23/20.
-//
+/**
+ * unit_menu.h - LCD menu for allowing the user to select their preferred
+ * system of units.
+ *
+ * Copyright (c) 2020 Brian Schubert
+ *
+ * This file is distributed under the MIT License. If a copy of the
+ * MIT License was not distributed with this file, you can obtain one
+ * at https://opensource.org/licenses/MIT.
+ */
 
 #ifndef SUBSONIC_IPT_UNIT_MENU_H
 #define SUBSONIC_IPT_UNIT_MENU_H

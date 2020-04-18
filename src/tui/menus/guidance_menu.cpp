@@ -1,6 +1,12 @@
-//
-// Created by brian on 1/21/20.
-//
+/**
+ * guidance_menu.cpp - Implementation for LCD guidance menu.
+ *
+ * Copyright (c) 2020 Brian Schubert
+ *
+ * This file is distributed under the MIT License. If a copy of the
+ * MIT License was not distributed with this file, you can obtain one
+ * at https://opensource.org/licenses/MIT.
+ */
 
 #include "guidance_menu.h"
 #include <math.h>
@@ -96,14 +102,17 @@ void GuidanceMenu::refresh_display(SerLCD& lcd)
     bool near_backward = (travel_angle > (backwards - m_snap_tolerance))
         && (travel_angle < (backwards + m_snap_tolerance));
 
-    //        const auto dist_meters = direction.norm();
-    const auto dist_meters = m_device_state->position.norm();
+    const auto dist_meters = direction.norm();
     char dist_buff[DIST_WIDTH];
-//    format_distance(
-//        dist_buff,
-//        abs(meters_to_unit(dist_meters, m_device_state->localized_unit))
-//    );
-    snprintf(dist_buff, DIST_WIDTH, "%3d", static_cast<int>(abs(meters_to_unit(dist_meters, m_device_state->localized_unit))));
+    format_distance(
+        dist_buff,
+        abs(meters_to_unit(dist_meters, m_device_state->localized_unit))
+    );
+    // Uncomment the below to override the "rich" formatting of the distance
+    // of the distance display. Useful for debugging the display of very large
+    // of very small distances due to the user selecting unusual units of
+    // measurement.
+//    snprintf(dist_buff, DIST_WIDTH, "%3d", static_cast<int>(abs(meters_to_unit(dist_meters, m_device_state->localized_unit))));
     const char* symbol = unit_symbol(m_device_state->localized_unit);
 
     lcd.setCursor(20 - DIST_WIDTH - strlen(symbol), 2);

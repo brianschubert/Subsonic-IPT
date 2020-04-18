@@ -1,6 +1,12 @@
-//
-// Created by brian on 2/25/20.
-//
+/**
+ * debug_menu.h - LCD menu for displaying live readouts of the device's state.
+ *
+ * Copyright (c) 2020 Brian Schubert
+ *
+ * This file is distributed under the MIT License. If a copy of the
+ * MIT License was not distributed with this file, you can obtain one
+ * at https://opensource.org/licenses/MIT.
+ */
 
 #ifndef SUBSONIC_IPT_DEBUG_MENU_H
 #define SUBSONIC_IPT_DEBUG_MENU_H
@@ -10,8 +16,16 @@
 namespace subsonic_ipt {
 
 class DebugMenu : public ListViewMenu {
+    /**
+     * The during in milliseconds that this screen should wait before
+     * signalling for a refresh.
+     */
     const unsigned long m_refresh_timeout;
 
+    /**
+     * The time in milliseconds since startup when this screen was last
+     * refreshed.
+     */
     unsigned long m_last_refresh{};
 
   protected:
@@ -39,7 +53,8 @@ class DebugMenu : public ListViewMenu {
 
     void refresh_display(SerLCD& lcd) override;
 
-    virtual bool content_changed() const;
+    [[nodiscard]]
+    bool content_changed() const override;
 };
 
 } // namespace subsonic_ipt

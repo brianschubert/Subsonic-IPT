@@ -1,6 +1,12 @@
-//
-// Created by brian on 2/23/20.
-//
+/**
+ * destination_menu.cpp - Implementation for LCD destination menu.
+ *
+ * Copyright (c) 2020 Brian Schubert
+ *
+ * This file is distributed under the MIT License. If a copy of the
+ * MIT License was not distributed with this file, you can obtain one
+ * at https://opensource.org/licenses/MIT.
+ */
 
 #include "destination_menu.h"
 

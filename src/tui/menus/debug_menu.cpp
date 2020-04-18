@@ -1,6 +1,12 @@
-//
-// Created by brian on 2/25/20.
-//
+/**
+ * debug_menu.cpp - Implementation for LCD debug menu.
+ *
+ * Copyright (c) 2020 Brian Schubert
+ *
+ * This file is distributed under the MIT License. If a copy of the
+ * MIT License was not distributed with this file, you can obtain one
+ * at https://opensource.org/licenses/MIT.
+ */
 
 #include "debug_menu.h"
 
@@ -62,12 +68,15 @@ const char* DebugMenu::get_menu_name() const noexcept
 
 void DebugMenu::refresh_display(SerLCD& lcd)
 {
+    // Update the last-refreshed timestamp during each screen refresh.
     m_last_refresh = millis();
     ListViewMenu::refresh_display(lcd);
 }
 
 bool DebugMenu::content_changed() const
 {
+    // Signal that this screens content has changed if the refresh timeout has
+    // expired or if the content changed flag has been manually toggled.
     return (millis() - m_last_refresh) >= m_refresh_timeout || Menu::content_changed();
 }
 } // namespace subsonic_ipt

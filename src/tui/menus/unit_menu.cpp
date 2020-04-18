@@ -1,6 +1,12 @@
-//
-// Created by brian on 2/23/20.
-//
+/**
+ * unit_menu.cpp - Implementation for the LCD unit menu.
+ *
+ * Copyright (c) 2020 Brian Schubert
+ *
+ * This file is distributed under the MIT License. If a copy of the
+ * MIT License was not distributed with this file, you can obtain one
+ * at https://opensource.org/licenses/MIT.
+ */
 
 #include "unit_menu.h"
 

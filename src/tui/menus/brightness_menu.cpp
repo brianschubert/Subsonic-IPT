@@ -1,3 +1,13 @@
+/**
+ * brightness_menu.cpp - Implementation for LCD brightness menu.
+ *
+ * Copyright (c) 2020 Brian Schubert
+ *
+ * This file is distributed under the MIT License. If a copy of the
+ * MIT License was not distributed with this file, you can obtain one
+ * at https://opensource.org/licenses/MIT.
+ */
+
 #include "brightness_menu.h"
 
 namespace subsonic_ipt {
