@@ -1,19 +1,27 @@
-//
-// Created by brian on 2/20/20.
-//
+/**
+ * list_menu.cpp - Implementation for menus that display lists of results.
+ *
+ * Copyright (c) 2020 Brian Schubert
+ *
+ * This file is distributed under the MIT License. If a copy of the
+ * MIT License was not distributed with this file, you can obtain one
+ * at https://opensource.org/licenses/MIT.
+ */
 
 #include "list_view_menu.h"
 
-namespace {
+// TODO: refactor all instances of screen width into a single configuration
+
+/**
+ * The maximum screen width that list entries should occupy.
+ */
 constexpr size_t DISPLAY_WIDTH = 20;
-}
 
 void subsonic_ipt::ListViewMenu::refresh_display(SerLCD& lcd)
 {
     m_content_changed = false;
 
     const size_t max_index = entry_count() - 1;
-    const size_t entries_to_print = min(3, entry_count() + 1);
 
     // Determine which entries should be printed
     const size_t top_entry = m_selected_entry == max_index
