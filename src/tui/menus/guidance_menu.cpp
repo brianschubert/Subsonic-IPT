@@ -96,6 +96,21 @@ void GuidanceMenu::refresh_display(SerLCD& lcd)
     bool near_backward = (travel_angle > (backwards - m_snap_tolerance))
         && (travel_angle < (backwards + m_snap_tolerance));
 
+    //        const auto dist_meters = direction.norm();
+    const auto dist_meters = m_device_state->position.norm();
+    char dist_buff[DIST_WIDTH];
+//    format_distance(
+//        dist_buff,
+//        abs(meters_to_unit(dist_meters, m_device_state->localized_unit))
+//    );
+    snprintf(dist_buff, DIST_WIDTH, "%3d", static_cast<int>(abs(meters_to_unit(dist_meters, m_device_state->localized_unit))));
+    const char* symbol = unit_symbol(m_device_state->localized_unit);
+
+    lcd.setCursor(20 - DIST_WIDTH - strlen(symbol), 2);
+    lcd.print(dist_buff);
+    lcd.print(symbol);
+
+
     lcd.setCursor(0, 3);
     // When the device is at its original position, we denote the travel angle
     // as NaN. When this occurs, invoke the forward handler.
@@ -103,18 +118,6 @@ void GuidanceMenu::refresh_display(SerLCD& lcd)
         lcd.print("You Have Arrived");
     } else if (near_forward) {
         lcd.print("Go forward ");
-
-        const auto dist_meters = direction.norm();
-        char dist_buff[DIST_WIDTH];
-        format_distance(
-            dist_buff,
-            abs(meters_to_unit(dist_meters, m_device_state->localized_unit))
-        );
-        const char* symbol = unit_symbol(m_device_state->localized_unit);
-
-        lcd.setCursor(20 - DIST_WIDTH - strlen(symbol), 2);
-        lcd.print(dist_buff);
-        lcd.print(symbol);
     } else if (near_backward) {
         lcd.print("Turn around");
     } else if (direction.m_y > 0) {
