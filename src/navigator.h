@@ -27,36 +27,26 @@ class Navigator {
     /// The number of destinations that a Navigator should store.
     static inline constexpr size_t DESTINATION_COUNT{4};
 
-    /// The current position of this navigator.
-    Point m_current_pos{};
-
     /// The list of target destination for this navigator.
     Point m_destinations[DESTINATION_COUNT]{{}};
 
     /// The index of the current target destination for this navigator.
     size_t m_current_dest{0};
 
-    /// The direction this navigator is currently facing.
-    Angle m_facing{0};
-
   public:
     Navigator() = default;
+
+    [[nodiscard]]
+    constexpr size_t destination_count() const  {
+        return DESTINATION_COUNT;
+    }
 
     [[nodiscard]]
     /**
      * Computes the vector relative to this navigator's current position
      * and direction facing that leads to this navigator's target destination.
      */
-    Point compute_direction() const;
-
-    [[nodiscard]]
-    /**
-     * Returns the current position of this navigator.
-     */
-    Point current_pos() const noexcept
-    {
-        return m_current_pos;
-    }
+    Point compute_direction(const Point pos, const Angle facing) const;
 
     [[nodiscard]]
     /**
@@ -69,36 +59,14 @@ class Navigator {
         return m_current_dest;
     }
 
+    void set_current_destination_index(size_t index) noexcept {
+        m_current_dest = index;
+    }
+
     [[nodiscard]]
     Point current_destination() const noexcept
     {
         return m_destinations[m_current_dest];
-    }
-
-    [[nodiscard]]
-    Angle current_facing() const noexcept
-    {
-        return m_facing;
-    }
-
-    /**
-     * Updates the current position of this navigator.
-     *
-     * Declared as inline since the implementation is trivial
-     */
-    void apply_displacement(Point displacement) noexcept
-    {
-        m_current_pos = m_current_pos + displacement;
-    }
-
-    /**
-     * Updates the direction that this navigator is facing.
-     *
-     * Declared as inline since the implementation is trivial
-     */
-    void apply_turn(Angle turn)
-    {
-        m_facing = m_facing + turn;
     }
 
     /**
@@ -106,9 +74,9 @@ class Navigator {
      *
      * Declared as inline since the implementation is trivial
      */
-    void cycle_destination() noexcept
+    void cycle_destination(bool forward = true) noexcept
     {
-        m_current_dest = (m_current_dest + 1) % DESTINATION_COUNT;
+        m_current_dest = (m_current_dest + (forward ? 1 : -1)) % DESTINATION_COUNT;
     }
 
     /**
@@ -120,11 +88,6 @@ class Navigator {
     void overwrite_destination(Point new_dest) noexcept
     {
         m_destinations[m_current_dest] = new_dest;
-    }
-
-    void set_facing(Angle facing) noexcept
-    {
-        m_facing = facing;
     }
 };
 

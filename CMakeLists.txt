@@ -19,12 +19,17 @@ include_directories(
         # Redundant libraries for Clion code completion
         ${ARDUINO_INSTALL_ROOT}/hardware/arduino/avr/cores/arduino
         ${ARDUINO_INSTALL_ROOT}/hardware/arduino/avr/variants/standard
+        ${ARDUINO_INSTALL_ROOT}/hardware/tools/avr/avr/include/
+        ${ARDUINO_INSTALL_ROOT}/hardware/arduino/avr/libraries/Wire/src
+        ${ARDUINO_INSTALL_ROOT}/hardware/arduino/avr/cores/
+        ${ARDUINO_INSTALL_ROOT}/hardware/tools/avr/avr/include/avr
+        ${ARDUINO_INSTALL_ROOT}/hardware/arduino/avr/libraries/SPI/src
 
         # Project-specified added libraries
-        ${ARDUINO_INSTALL_LIBRARIES}/LiquidCrystal/src
+        ${ARDUINO_USER_LIBRARIES}/SparkFun_SerLCD_Arduino_Library/src
 )
 
-file(GLOB ARDUINO_SOURCES ../src/*)
+file(GLOB ARDUINO_SOURCES src/*)
 # use this target for a quick compile-only check of your CPP files
 # add more source (CPP) files here when you add them to the sketch
 add_executable(arduino-clion-minimal sketch.cpp ${ARDUINO_SOURCES})

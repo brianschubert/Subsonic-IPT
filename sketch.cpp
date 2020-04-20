@@ -1,27 +1,34 @@
 /**
  * sketch.cpp - Arduino sketch entry point
  *
- * Copyright (c) 2019 Brian Schubert
+ * Copyright (c) 2019, 2020 Brian Schubert
  *
  * This file is distributed under the MIT License. If a copy of the
  * MIT License was not distributed with this file, you can obtain one
  * at https://opensource.org/licenses/MIT.
  */
 
+#define UBRRH // For code completion with HardwareSerial
 #include <Arduino.h>
-#include <LiquidCrystal.h>
+#include <SerLCD.h>
+#include <Wire.h>
 
 #include "src/point.h"
 #include "src/navigator.h"
-#include "src/led_array.h"
-#include "src/direction_screen.h"
-#include "src/buttons.h"
-#include "src/mpu.h"
+#include "src/inputs/buttons.h"
+#include "src/inputs/mpu.h"
 #include "src/pin.h"
+#include "src/state.h"
+#include "src/tui/menu_manager.h"
+#include "src/tui/menus/guidance_menu.h"
+#include "src/tui/menus/destination_menu.h"
+#include "src/tui/menus/unit_menu.h"
+#include "src/tui/menus/debug_menu.h"
+#include "src/tui/menus/brightness_menu.h"
 
 // When defined, a message will be printed to the Serial output whenever
 // a button press registered.
-#define SUBSONIC_DEBUG_SERIAL_BUTTONS
+//#define SUBSONIC_DEBUG_SERIAL_BUTTONS
 
 // When defined, the devices current position will be printed periodically
 // to the Serial output.
@@ -41,7 +48,7 @@ using namespace subsonic_ipt;
  * The period of time elapsed between updates for
  * the LCD and LED array.
  */
-constexpr int REFRESH_PERIOD_MILLI = 300;
+constexpr int REFRESH_PERIOD_MILLI = 100;
 
 /**
  * Whenever the device is with this distance of a target, it is considered
@@ -63,8 +70,8 @@ constexpr uint16_t SERIAL_PORT = 9600;
  * The dimensions of the LCD screen used by this sketch.
  */
 constexpr struct {
-    uint8_t x = 16;
-    uint8_t y = 2;
+    uint8_t x = 20;
+    uint8_t y = 4;
 } LCD_DIMENSIONS;
 
 //constexpr double EXPECTED_GRAVITY = 9.81;
@@ -75,10 +82,8 @@ constexpr struct {
  */
 constexpr double PITCH_VEL_MAPPING[][2] = {
     {10, 0},
-    {45, 0.5},
-    {90, 1},
-//    {65, 2.0},
-//    {90, 3.0},
+    {45, 1.5},
+    {90, 2},
 };
 
 
@@ -91,66 +96,39 @@ constexpr double PITCH_VEL_MAPPING[][2] = {
 namespace {
 
 /**
- * Wrapper modeling the array of LEDs being used by this sketch.
- */
-LEDArray<sizeof(LED_PINS)> g_led_array(LED_PINS);
-
-/**
  * Global structure to track the positional data associated with the device.
  */
 Navigator g_nav{};
 
-/**
- * Prints a title line to the given LCD screen.
- */
-void print_screen_title(LiquidCrystal& lcd);
+SerLCD g_lcd{};
 
-/**
- * Prints a "you have arrived" direction to the given LCD screen.
- */
-void print_direction_arrived(LiquidCrystal& lcd, Point direction);
+IPTState g_device_state{};
 
-/**
- * Prints a "move-forward" direction to the given LCD screen.
- */
-void print_direction_forward(LiquidCrystal& lcd, Point direction);
-
-/**
- * Prints a "turn-left" direction to the given LCD screen.
- */
-void print_direction_left(LiquidCrystal& lcd, Point direction);
-
-/**
- * Prints a "turn-right" direction to the given LCD screen.
- */
-void print_direction_right(LiquidCrystal& lcd, Point direction);
-
-/**
- * Prints a "turn around" direction to the given LCD screen.
- */
-void print_direction_backward(LiquidCrystal& lcd, Point direction);
-
-/**
- * Wrapper around the SparkFun LCD api for displaying guidance directions.
- */
-DirectionScreen g_screen(
-    LiquidCrystal(
-        LCD_PINS.rs,
-        LCD_PINS.enable,
-        LCD_PINS.data[0],
-        LCD_PINS.data[1],
-        LCD_PINS.data[2],
-        LCD_PINS.data[3]
-    ),
+GuidanceMenu g_guidance_menu(
+    &g_device_state,
+    &g_nav,
     Angle::from_degrees(10.0),
     ARRIVAL_THRESHOLD,
-    print_screen_title,
-    print_direction_arrived,
-    print_direction_forward,
-    print_direction_left,
-    print_direction_right,
-    print_direction_backward
+    500
 );
+
+DestinationMenu g_destination_menu(&g_device_state, &g_nav);
+
+UnitMenu g_unit_menu(&g_device_state);
+
+DebugMenu g_debug_menu(&g_device_state, 500);
+
+BrightnessMenu g_brightness_menu{};
+
+Menu* const g_menus[]{
+    &g_guidance_menu,
+    &g_destination_menu,
+    &g_unit_menu,
+    &g_debug_menu,
+    &g_brightness_menu,
+};
+
+MenuManager<5> g_menu_manager{g_menus};
 
 /**
  * The maximum distance that this device has been from a target destination.
@@ -171,14 +149,6 @@ unsigned long g_last_display_update{0};
  * was last updated.
  */
 unsigned long g_last_position_update_u{0};
-
-/**
- * Whether a button is currently being pressed.
- *
- * Used to prevent multiple loop cycles from acting on the same button
- * depression.
- */
-bool g_button_pressed{false};
 
 /**
  * Callback function that is run repeatedly while the MPU is waiting
@@ -213,14 +183,12 @@ void setup()
     Serial.begin(SERIAL_PORT);
     Serial.println("Starting setup routine...");
 
-    // Configure whether the LED array should use PWM when illuminating
-    // LEDS
-    g_led_array.set_pwm(true);
-
-    // Initialize the LCD library for a 16x2 character display.
-    g_screen.lcd().begin(LCD_DIMENSIONS.x, LCD_DIMENSIONS.y);
-    // Clear the LCD screen.
-    g_screen.lcd().clear();
+    Wire.begin();
+    Wire.setClock(I2C_CLOCK_RATE);
+    // Initialize the LCD library
+    g_lcd.begin(Wire);
+    g_lcd.setContrast(5);
+    g_lcd.clear();
 
     // Set the pin modes of the button pins.
     for (auto button : BUTTON_PINS) {
@@ -233,37 +201,38 @@ void setup()
     }
 
     // Display interactive welcome sequence
-    g_screen.lcd().print("Subsonic IPT");
-    g_screen.lcd().setCursor(0, 1);
-    g_screen.lcd().print(' ');
+    g_lcd.print("Subsonic IPT");
+    g_lcd.setCursor(0, 1);
+    g_lcd.noCursor();
+    g_lcd.setBacklight(0x808080);
 
     for (int i = 0; i < (LCD_DIMENSIONS.x / 2) - 2; ++i) {
-        g_screen.lcd().print("* ");
+        g_lcd.print("* ");
         delay(250);
     }
 
     Serial.println("Waiting for use input to calibrate...");
-    g_screen.lcd().clear();
-    g_screen.lcd().setCursor(0, 0);
-    g_screen.lcd().print("Press any button");
-    g_screen.lcd().setCursor(0, 1);
-    g_screen.lcd().print("for calibration");
-    while (!button_any_tap_once()) refresh_buttons(); // Wait for any button to be pressed
+    g_lcd.clear();
+    g_lcd.setCursor(0, 0);
+    g_lcd.print("Press any button");
+    g_lcd.setCursor(0, 1);
+    g_lcd.print("for calibration");
+    while (!button_any_tap_once()) { refresh_buttons(); } // Wait for any button to be pressed
 
-    g_screen.lcd().clear();
-    g_screen.lcd().setCursor(0, 0);
-    g_screen.lcd().print("Initializing MPU");
-    g_screen.lcd().setCursor(0, 1);
-    g_screen.lcd().print("Calibrating...");
+    g_lcd.clear();
+    g_lcd.setCursor(0, 0);
+    g_lcd.print("Initializing MPU");
+    g_lcd.setCursor(0, 1);
+    g_lcd.print("Calibrating...");
 
     Serial.println("Beginning MPU setup...");
-    auto mpu_status = setup_mpu(I2C_CLOCK_RATE);
+    auto mpu_status = setup_mpu();
     if (mpu_status != 0) {
-        g_screen.lcd().clear();
-        g_screen.lcd().setCursor(0, 0);
-        g_screen.lcd().print("FAILED TO START");
-        g_screen.lcd().setCursor(0, 1);
-        g_screen.lcd().print("MPU - [STOPPING]");
+        g_lcd.clear();
+        g_lcd.setCursor(0, 0);
+        g_lcd.print("FAILED TO START");
+        g_lcd.setCursor(0, 1);
+        g_lcd.print("MPU - [STOPPING]");
         while (true) { /* loop forever */ }
     }
     Serial.println("Setup successful.");
@@ -287,34 +256,28 @@ void subsonic_loop()
     // Update the state of the buttons/switches
     refresh_buttons();
 
-    if (button_closed_once(ButtonSet)) {
-#ifdef SUBSONIC_DEBUG_SERIAL_BUTTONS
-        Serial.println("Setting new destination.");
-#endif
-        g_nav.overwrite_destination(g_nav.current_pos());
-    }
+    const Menu::Input input{
+        button_closed_once(ButtonLeft),
+        button_closed_once(ButtonRight),
+        button_closed_once(ButtonUp),
+        button_closed_once(ButtonDown),
+        button_closed_once(ButtonEnter),
+    };
 
-    if (button_closed_once(ButtonCycle)) {
-#ifdef SUBSONIC_DEBUG_SERIAL_BUTTONS
-        Serial.println("Cycling destinations.");
-#endif
-        g_nav.cycle_destination();
-    }
+    g_menu_manager.interact(input);
 
     const auto time = millis();
     // Check if sufficient time has passed since the last display update.
     if (time - g_last_display_update >= REFRESH_PERIOD_MILLI) {
         g_last_display_update = time;
-#ifdef SUBSONIC_DEBUG_SERIAL_POSITION
-        Serial.print("Now at (");
-        Serial.print(g_nav.current_pos().m_x);
-        Serial.print(',');
-        Serial.print(g_nav.current_pos().m_y);
-        Serial.println(")");
-#endif
+
+        g_menu_manager.refresh_display(g_lcd);
 
         // Compute the guidance direction that should be displayed to the user.
-        Point user_direction = g_nav.compute_direction();
+        Point user_direction = g_nav.compute_direction(
+            g_device_state.position,
+            g_device_state.facing
+        );
         auto direction_dist = user_direction.norm();
 
         // Check if the device has reached a new maximum distance from
@@ -332,99 +295,76 @@ void subsonic_loop()
         Serial.print(direction_dist / g_max_distance);
         Serial.println(" percent of LEDs");
 #endif
-        // Illuminate a number of LEDs proportional to the device's distance
-        // from the target destination.
-        g_led_array.activate_led_percent(1 - (direction_dist / g_max_distance));
-        // Print the guidance direction to the LCD screen.
-        g_screen.print_direction(user_direction);
+        // Temporary arbitrary waypoint colors.
+        switch (g_nav.current_destination_index()) {
+            case 0: {
+                analogWrite(LED_PINS[0], 30);
+                analogWrite(LED_PINS[1], 127);
+                analogWrite(LED_PINS[2], 30);
+                break;
+            }
+            case 1: {
+                analogWrite(LED_PINS[0], 255);
+                analogWrite(LED_PINS[1], 127);
+                analogWrite(LED_PINS[2], 0);
+                break;
+            }
+            case 2: {
+                analogWrite(LED_PINS[0], 0);
+                analogWrite(LED_PINS[1], 255);
+                analogWrite(LED_PINS[2], 255);
+                break;
+            }
+            case 3: {
+                analogWrite(LED_PINS[0], 100);
+                analogWrite(LED_PINS[1], 0);
+                analogWrite(LED_PINS[2], 0);
+                break;
+            }
+        }
+//        g_led_array.activate_led_percent(1 - (direction_dist / g_max_distance));
     }
-}
-
-void print_screen_title(LiquidCrystal& lcd)
-{
-    lcd.print("To #");
-    lcd.print(g_nav.current_destination_index());
-    lcd.print("(");
-    const auto destination = g_nav.current_destination();
-    lcd.print(static_cast<int>(destination.m_x));
-    lcd.print(",");
-    lcd.print(static_cast<int>(destination.m_y));
-    lcd.print(")");
-}
-
-void print_direction_arrived(LiquidCrystal& lcd, Point direction)
-{
-    lcd.print("You Have Arrived");
-}
-
-void print_direction_forward(LiquidCrystal& lcd, Point direction)
-{
-    lcd.print("Go forward ");
-    lcd.print(direction.norm());
-    lcd.print("m");
-}
-
-void print_direction_left(LiquidCrystal& lcd, Point direction)
-{
-    lcd.print("Turn ");
-    lcd.print(static_cast<int>(direction.angle().deg()));
-    lcd.print("* Left");
-}
-
-void print_direction_right(LiquidCrystal& lcd, Point direction)
-{
-    lcd.print("Turn ");
-    lcd.print(360 - static_cast<int>(direction.angle().deg()));
-    lcd.print("* Right");
-}
-
-void print_direction_backward(LiquidCrystal& lcd, Point direction)
-{
-    lcd.print("Turn around");
 }
 
 void update_position(const DeviceMotion& device_motion)
 {
+    // Member pointer to the member of DeviceMotion that contains the "true
+    // pitch" of the device.
+    //
+    // Update this pointer if the MPU is mounted in an orientation different
+    // from the expected orientation of the device.
+    //
+    // e.g. if the MPU is rotated 90 degrees, the "true pitch" will be the
+    // roll.
+    constexpr static float DeviceMotion::*true_pitch = &DeviceMotion::roll;
+
+    // Copy new motion measurements into device state storage.
+    g_device_state.device_motion = device_motion;
+    g_device_state.device_motion.yaw = device_motion.yaw;
+    g_device_state.device_motion.pitch = device_motion.pitch;
+    g_device_state.device_motion.roll = device_motion.roll;
     auto current_time = micros();
     auto time_delta = static_cast<double>(current_time - g_last_position_update_u);
     time_delta /= 1e6;             // convert microseconds to seconds
-//    constexpr uint32_t MAX_ACCEL = 16384;
-//
-//    // Compute acceleration * time
-//    Point device_accel{
-//        EXPECTED_GRAVITY * world_accel.x * time_delta / MAX_ACCEL,
-//        EXPECTED_GRAVITY * world_accel.y * time_delta / MAX_ACCEL,
-//    };
-//
-//    // Temporarily filter out very very small accelerations to
-//    // reduce noise in velocity
-//    if (abs(world_accel.x) < 20) {
-//        device_accel.m_x = 0;
-//    }
-//    if (abs(world_accel.y) < 20) {
-//        device_accel.m_y = 0;
-//    }
-//
-//    // Update v = v_0 + at
-//    g_nav.apply_acceleration(device_accel);
-//    // Update displacement = 0.5 * at^2 + vt
-//    g_nav.move(
-//        time_delta * (0.5 * device_accel + g_nav.current_vel())
-//    );
 
     // Yaw is reported as a clockwise rotation, so we flip its sign
     // to change to the counterclockwise rotation used by the navigation
     // logic.
     auto yaw_angle = Angle{-device_motion.yaw};
     yaw_angle.normalize();
-    g_nav.set_facing(yaw_angle);
-    g_nav.apply_displacement(
-        time_delta * pitch_to_vel(Angle{device_motion.pitch}) * Point::unit_from_angle(yaw_angle)
-    );
+    g_device_state.facing = yaw_angle;
+    const auto displacement =
+        time_delta * pitch_to_vel(Angle{device_motion.*true_pitch}) * Point::unit_from_angle(yaw_angle);
+    g_device_state.position = g_device_state.position + displacement;
 
-    // Recompute current time to account for time long to arithmetic
+    // Recompute current time to account for time lost to arithmetic
     g_last_position_update_u = micros();
-
+    Serial.print("From (");
+    Serial.print(g_device_state.position.m_x);
+    Serial.print(',');
+    Serial.print(g_device_state.position.m_y);
+    Serial.print(")@");
+    Serial.println(g_device_state.facing.deg());
 }
 
 double pitch_to_vel(Angle pitch)
@@ -435,7 +375,7 @@ double pitch_to_vel(Angle pitch)
         }
     }
     constexpr size_t last_pos = (sizeof(PITCH_VEL_MAPPING) / sizeof(PITCH_VEL_MAPPING[0])) - 1;
-    return PITCH_VEL_MAPPING[last_pos][1];
+    return 1; //PITCH_VEL_MAPPING[last_pos][1];
 }
 
 } // namespace

@@ -1,9 +1,16 @@
 Subsonic IPT
 ============
 
-An Arduino Sketch for inertial position tracking using an MPU6060 accelerometer and gyroscope.
+An Arduino sketch for inertial position tracking using an MPU6060 accelerometer and gyroscope.
 
-This repository was developed by the "Subsonic" team as part of an assignment for the GE 1501 course at Northeastern University during Fall 2019.
+This repository was developed by the "Subsonic" team as part of an assignment for the courses GE 1501 and GE 1502 at Northeastern University during Fall 2019 and Spring 2020, respectively.
+
+This codebase consists of Arduino-C++, which is a dialect of C++ that notably does not link against the C++ standard library.
+
+See `this diagram`_ for how to wire this project. This image was created with `Fritzing`_.
+
+.. _this diagram: ./resources/ipt_fritzing_diagram_v2.0.0.png
+.. _Fritzing: https://fritzing.org/home/
 
 Installation
 ------------
@@ -14,9 +21,12 @@ To install the latest release of this sketch, simply clone the git repository by
 
     $ git clone https://github.com/blueschu/Subsonic-IPT.git
 
-This sketch depends on the Arduino LiquidCrystal library. If this library was not included with your Arduino distribution, you can install if by following the steps outlined in the `SparkFun Tutorial`_ for installing Arduino libraries.
+This sketch depends on the `SparkFun SerLCD library`_. If you have not previously installed this library, you can install if by following the steps outlined in the `SparkFun tutorial`_ for installing Arduino libraries.
 
+.. _SparkFun SerLCD library: https://github.com/sparkfun/SparkFun_SerLCD_Arduino_Library
 .. _SparkFun tutorial: https://learn.sparkfun.com/tutorials/installing-an-arduino-library
+
+This sketch makes use of some C++17 language features, such as inline variables. Therefore, it is recommended that you configure your arduino installation to pass the appropriate language flag to the compiler. This can be accomplished by editing the ``platform.txt`` file contained in your Arduino installation directory. On Linux, this file is located at ``<arduino install directory>/hardware/arduino/avr/platform.txt``. Within this file, navigate to the ``compiler.cpp.flags=`` setting and replace ``-std=gnu++11`` with ``-std=gnu++1z``.
 
 Running the Sketch
 ------------------
@@ -56,7 +66,7 @@ To run this sketch using the Arduino IDE, rename the ``sketch.cpp`` file to have
 Credits
 -------
 
-The structure of repository is a custom Linux port of a template created by Charl P. Botha. His original ``arduino-clion-minimal`` repository may be found `here`_.
+The Arduino/CMake integration used in this repository is a custom Linux port of a template created by Charl P. Botha. His original ``arduino-clion-minimal`` repository may be found `here`_.
 
 .. _here: https://github.com/cpbotha/arduino-clion-minimal
 

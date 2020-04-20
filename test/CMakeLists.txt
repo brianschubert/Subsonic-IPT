@@ -1,3 +1,2 @@
-file(GLOB ARDUINO_SOURCES ../src/*)
 
-add_executable(tests test.cpp ${ARDUINO_SOURCES})
+add_executable(tests test.cpp ../src/navigator.cpp ../src/navigator.h ../src/point.h)

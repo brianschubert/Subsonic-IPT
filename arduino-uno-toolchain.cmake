@@ -20,7 +20,7 @@ set(CMAKE_CXX_COMPILER ${ARDUINO_INSTALL_ROOT}/hardware/tools/avr/bin/avr-g++)
 # directories below this, and the definitions below that.
 # hint: look in the output for "Compiling sketch..."
 SET(COMMON_FLAGS "-c -g -Os -w -ffunction-sections -fdata-sections -MMD -flto -mmcu=atmega328p")
-SET(CMAKE_CXX_FLAGS "${COMMON_FLAGS} -std=gnu++11 -fpermissive -fno-exceptions -fno-threadsafe-statics -fno-rtti -fno-exceptions")
+SET(CMAKE_CXX_FLAGS "${COMMON_FLAGS} -std=gnu++1z -fpermissive -fno-exceptions -fno-threadsafe-statics -fno-rtti -fno-exceptions")
 SET(CMAKE_C_FLAGS "${COMMON_FLAGS} -std=gnu11 -fno-fat-lto-objects")
 
 include_directories(
